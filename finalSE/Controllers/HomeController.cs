@@ -23,6 +23,7 @@ namespace finalSE.Controllers
             return View();
         }
 
+        //Testing commit
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
