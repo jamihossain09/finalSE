@@ -1,0 +1,40 @@
+﻿@model User
+
+<h2>Edit User</h2>
+
+<form asp-action="Edit" method="post">
+
+    <input type="hidden" asp-for="Id" />
+
+    <!-- 🔥 IMPORTANT -->
+    <input type="hidden" asp-for="PasswordHash" />
+
+    <div>
+        <label>Username</label>
+        <input asp-for="UserName" class="form-control" />
+    </div>
+
+    <div>
+        <label>Email</label>
+        <input asp-for="Email" class="form-control" />
+    </div>
+
+    <div>
+        <label>Address</label>
+        <input asp-for="Address" class="form-control" />
+    </div>
+
+    <div>
+        <label>Role</label>
+
+        <select asp-for="RoleId"
+                asp-items="ViewBag.Roles"
+                class="form-control">
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Update
+    </button>
+
+</form>

@@ -1,0 +1,50 @@
+@model IEnumerable<finalSE.Models.Invitation>
+
+<h2>Invitations</h2>
+
+<a asp-action="Create" class="btn btn-success mb-3">
+    Send New Invitation
+</a>
+
+<table class="table table-bordered">
+
+    <thead>
+        <tr>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Expire</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Email</td>
+                <td>@(item.Role?.RoleName ?? item.RoleId.ToString())</td>
+
+                <td>
+                    @(item.IsUsed ? "Used" : "Pending")
+                </td>
+
+                <td>@item.ExpireDate</td>
+                <td>
+                    @if (!item.IsUsed)
+                    {
+                        var registrationLink = $"{Context.Request.Scheme}://{Context.Request.Host}/Account/RegisterWithToken?token={item.Token}";
+                        <button class="btn btn-primary btn-sm" onclick="navigator.clipboard.writeText('@registrationLink'); alert('Link copied to clipboard!');">
+                            Copy Link
+                        </button>
+                    }
+                    else
+                    {
+                        <span class="text-success">Joined</span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+
+</table>

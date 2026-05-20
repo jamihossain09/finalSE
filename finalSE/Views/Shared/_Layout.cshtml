@@ -3,44 +3,123 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - finalSE</title>
+    <title>@ViewData["Title"] - School Management System</title>
+
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/finalSE.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/SE_1st_projects.styles.css" asp-append-version="true" />
 </head>
+
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">finalSE</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
+    @if (!User.Identity.IsAuthenticated)
+    {
+        <!-- GUEST LAYOUT -->
+        <header class="guest-navbar">
+            <a class="brand-logo" asp-controller="Home" asp-action="Index">
+                <i class="fas fa-graduation-cap" style="color: var(--primary);"></i>
+                <span>School Manager</span>
+            </a>
+            <div class="nav-links">
+                <a class="btn-secondary-premium" asp-controller="Account" asp-action="Login" style="padding: 0.6rem 1.5rem; font-size: 0.875rem;">Login</a>
+                <a class="btn-primary-premium" asp-controller="Account" asp-action="Register" style="padding: 0.6rem 1.5rem; font-size: 0.875rem;">Register</a>
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+        </header>
+
+        <main role="main">
             @RenderBody()
         </main>
-    </div>
+    }
+    else
+    {
+        <!-- ADMIN LAYOUT -->
+        <div class="admin-layout">
+            <aside class="sidebar">
+                <div class="sidebar-brand">
+                    <div style="width: 40px; height: 40px; background: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                        <i class="fas fa-school"></i>
+                    </div>
+                    <span>SMS Admin</span>
+                </div>
+                <nav class="sidebar-menu">
+                    <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "active" : "")"
+                           asp-controller="Home" asp-action="Index">
+                        <i class="fas fa-chart-pie"></i>
+                        Dashboard
+                    </a>
+                    
+                    <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Student" ? "active" : "")"
+                           asp-controller="Student" asp-action="Index">
+                        <i class="fas fa-user-graduate"></i>
+                        Student
+                    </a>
 
-    <footer class="border-top footer text-muted">
+                    <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Teacher" ? "active" : "")"
+                           asp-controller="Teacher" asp-action="Index">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                        Teacher
+                    </a>
+
+                    <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Routine" ? "active" : "")"
+                           asp-controller="Routine" asp-action="Index">
+                        <i class="fas fa-calendar-days"></i>
+                        Routine
+                    </a>
+
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <div style="padding: 2rem 1.5rem 0.5rem; font-size: 0.7rem; text-transform: uppercase; color: #475569; font-weight: 800; letter-spacing: 0.1em;">Administration</div>
+                        <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "User" ? "active" : "")"
+                               asp-controller="User" asp-action="Index">
+                            <i class="fas fa-users-gear"></i>
+                            Manage Users
+                        </a>
+                        <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Role" ? "active" : "")"
+                               asp-controller="Role" asp-action="Index">
+                            <i class="fas fa-key"></i>
+                            Permissions
+                        </a>
+                    }
+
+                    <div style="margin-top: auto; padding: 1rem;">
+                        <a class="menu-item text-danger" asp-controller="Account" asp-action="Logout" style="background: rgba(239, 68, 68, 0.05);">
+                            <i class="fas fa-power-off"></i>
+                            Logout
+                        </a>
+                    </div>
+                </nav>
+            </aside>
+
+            <main class="main-content">
+                <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem;">
+                    <div>
+                        <h2 class="fw-bold m-0" style="letter-spacing: -0.03em;">@ViewData["Title"]</h2>
+                        <p class="text-muted m-0">Organization Portal &bull; @User.Identity.Name</p>
+                    </div>
+                    <div style="display: flex; gap: 1.5rem; align-items: center;">
+                        <div class="premium-card" style="padding: 0.5rem 1rem; border-radius: 1rem; display: flex; align-items: center; gap: 1rem;">
+                            <i class="fas fa-search text-muted"></i>
+                            <input type="text" placeholder="Global search..." style="border: none; outline: none; background: none; width: 150px; font-size: 0.875rem;">
+                        </div>
+                        <div style="width: 48px; height: 48px; background: var(--sidebar-bg); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: var(--shadow-premium);">
+                            <i class="fas fa-user-astronaut"></i>
+                        </div>
+                    </div>
+                </header>
+
+                <div class="animate-up">
+                    @RenderBody()
+                </div>
+            </main>
+        </div>
+    }
+
+    <footer class="text-center py-5 text-muted border-top @(User.Identity.IsAuthenticated ? "ms-280" : "")">
         <div class="container">
-            &copy; 2026 - finalSE - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            <p class="mb-0">&copy; 2026 - School Management System &bull; Premium Educational Interface</p>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

@@ -1,0 +1,75 @@
+@model finalSE.Models.User
+
+@{
+    ViewData["Title"] = "Register";
+}
+
+<h2>Register</h2>
+
+@if (ViewBag.RoleName != null)
+{
+    <h4>Registering as: <strong>@ViewBag.RoleName</strong></h4>
+    <br />
+}
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+    <br />
+}
+
+<form asp-action="@(ViewBag.Token != null ? "RegisterFromInvitation" : "Register")" method="post">
+
+    @if (ViewBag.Token != null)
+    {
+        <input type="hidden" name="token" value="@ViewBag.Token" />
+    }
+
+    <input asp-for="UserName" class="form-control" placeholder="Username" required />
+    <br />
+
+    @if (ViewBag.Token != null)
+    {
+        <input asp-for="Email" class="form-control" placeholder="Email" value="@ViewBag.Email" readonly />
+    }
+    else
+    {
+        <input asp-for="Email" class="form-control" placeholder="Email" required />
+    }
+    <br />
+
+    <input asp-for="PasswordHash" type="password" class="form-control" placeholder="Password" required />
+    <br />
+
+    <input asp-for="Address" class="form-control" placeholder="Address" required />
+    <br />
+
+    @if (ViewBag.RoleName == "Student")
+    {
+        <input type="number" name="age" class="form-control" placeholder="Age" required />
+        <br />
+    }
+    else if (ViewBag.RoleName == "Teacher")
+    {
+        <input type="text" name="phone" class="form-control" placeholder="Phone Number" required />
+        <br />
+    }
+
+    @if ((ViewBag.RoleName == "Student" || ViewBag.RoleName == "Teacher") && ViewBag.Departments != null)
+    {
+        <label>Select Department</label>
+        <select name="departmentId" class="form-control" required>
+            <option value="">-- Select Department --</option>
+            @foreach (var dept in ViewBag.Departments)
+            {
+                <option value="@dept.Id">@dept.DepartmentName</option>
+            }
+        </select>
+        <br />
+    }
+
+    <button type="submit" class="btn btn-success">
+        Register
+    </button>
+
+</form>

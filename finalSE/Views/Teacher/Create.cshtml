@@ -1,0 +1,31 @@
+﻿@model Teacher
+
+<h2>Teacher Form</h2>
+
+<form asp-action="Create" method="post">
+
+    <input asp-for="Name" placeholder="Name" class="form-control" />
+    <br />
+
+    <input asp-for="Email" placeholder="Email" class="form-control" />
+    <br />
+
+    <input asp-for="Phone" placeholder="Phone" class="form-control" />
+    <br />
+
+    <input asp-for="Address" placeholder="Address" class="form-control" />
+    <br />
+
+    <select asp-for="DepartmentId"
+            asp-items="ViewBag.Departments"
+            class="form-control">
+        <option>Select Department</option>
+    </select>
+
+    <br />
+
+    <button type="submit" class="btn btn-success">
+        Save
+    </button>
+
+</form>

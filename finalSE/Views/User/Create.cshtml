@@ -1,0 +1,42 @@
+﻿@model User
+
+<h2>Create User</h2>
+
+<form asp-action="Create" method="post">
+
+    <div>
+        <label>Username</label>
+        <input asp-for="UserName" class="form-control" />
+    </div>
+
+    <div>
+        <label>Email</label>
+        <input asp-for="Email" class="form-control" />
+    </div>
+
+    <div>
+        <label>Password</label>
+        <input asp-for="PasswordHash" class="form-control" />
+    </div>
+
+    <div>
+        <label>Address</label>
+        <input asp-for="Address" class="form-control" />
+    </div>
+
+    <!-- 🔥 IMPORTANT FIX -->
+    <div>
+        <label>Role</label>
+        <select asp-for="RoleId" asp-items="ViewBag.Roles" class="form-control">
+            <option value="">-- Select Role --</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create</button>
+
+</form>
+
+@if (ViewBag.Error != null)
+{
+    <p style="color:red">@ViewBag.Error</p>
+}

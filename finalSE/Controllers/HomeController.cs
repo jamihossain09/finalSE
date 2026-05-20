@@ -1,4 +1,5 @@
 using finalSE.Models;
+using finalSE.Service.Interface;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
@@ -8,13 +9,27 @@ namespace finalSE.Controllers
     {
         private readonly ILogger<HomeController> _logger;
 
-        public HomeController(ILogger<HomeController> logger)
+        private readonly IUserService _userService;
+        private readonly IStudentService _studentService;
+
+        public HomeController(
+            ILogger<HomeController> logger,
+            IUserService userService,
+            IStudentService studentService)
         {
             _logger = logger;
+            _userService = userService;
+            _studentService = studentService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            var users = _userService.GetAll();
+            var students = await _studentService.GetAllAsync();
+
+            ViewBag.TotalUsers = users?.Count ?? 0;
+            ViewBag.TotalStudents = students?.Count() ?? 0;
+
             return View();
         }
 
@@ -23,12 +38,13 @@ namespace finalSE.Controllers
             return View();
         }
 
-        //Testing commit
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return View(new ErrorViewModel
+            {
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+            });
         }
     }
 }
-//hudhfugdhfgud

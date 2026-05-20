@@ -1,0 +1,14 @@
+﻿@using finalSE.Models
+@model Teacher
+
+<h2>Teacher Details</h2>
+
+<div class="card p-3">
+    <p><b>Name:</b> @Model.Name</p>
+    <p><b>Email:</b> @Model.Email</p>
+    <p><b>Phone:</b> @Model.Phone</p>
+    <p><b>Address:</b> @Model.Address</p>
+    <p><b>Department:</b> @Model.Department?.DepartmentName</p>
+</div>
+
+<a asp-action="Index" class="btn btn-primary">Back</a>
