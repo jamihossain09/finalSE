@@ -24,6 +24,18 @@ namespace finalSE.Controllers
 
         public async Task<IActionResult> Index()
         {
+            if (User.Identity.IsAuthenticated)
+            {
+                if (User.IsInRole("Teacher"))
+                {
+                    return RedirectToAction("Index", "TeacherPanel");
+                }
+                if (User.IsInRole("Student"))
+                {
+                    return RedirectToAction("Index", "StudentPortal");
+                }
+            }
+
             var users = _userService.GetAll();
             var students = await _studentService.GetAllAsync();
 

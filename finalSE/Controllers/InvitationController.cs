@@ -1,4 +1,4 @@
-﻿using finalSE.Service.Interface;
+using finalSE.Service.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -57,7 +57,39 @@ namespace finalSE.Controllers
                 return View();
             }
 
-            await _invitationService.SendInvitationAsync(email, roleId);
+            try
+            {
+                await _invitationService.SendInvitationAsync(email, roleId);
+                TempData["SuccessMessage"] = $"Invitation email successfully sent to {email}!";
+            }
+            catch (System.Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Failed to send invitation email: {ex.Message}. Make sure your SMTP settings in appsettings.json are configured.";
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // ================= RESEND / SEND TO EMAIL =================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResendEmail(string token, string email)
+        {
+            if (string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(email))
+            {
+                TempData["ErrorMessage"] = "Token and email are required.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            try
+            {
+                await _invitationService.ResendInvitationEmailAsync(token, email);
+                TempData["SuccessMessage"] = $"Invitation email successfully sent to {email}!";
+            }
+            catch (System.Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Failed to send email: {ex.Message}. Make sure your SMTP settings in appsettings.json are configured.";
+            }
 
             return RedirectToAction(nameof(Index));
         }

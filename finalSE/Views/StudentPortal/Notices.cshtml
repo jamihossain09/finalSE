@@ -1,0 +1,68 @@
+@model IEnumerable<finalSE.Models.Notice>
+
+@{
+    ViewData["Title"] = "School Notice Board";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex align-items-center mb-4">
+        <a asp-action="Index" class="btn btn-outline-secondary me-3" style="border-radius: 8px;">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <div>
+            <h2 class="fw-bold text-dark m-0"><i class="fas fa-bullhorn text-danger me-2"></i>Notice Board</h2>
+            <p class="text-muted m-0">Official updates and notices from the administration</p>
+        </div>
+    </div>
+
+    <div class="row">
+        @if (!Model.Any())
+        {
+            <div class="col-12 text-center py-5">
+                <div class="text-muted">
+                    <i class="far fa-clipboard fa-3x mb-3"></i>
+                    <p class="fs-5">No notices published yet.</p>
+                </div>
+            </div>
+        }
+        else
+        {
+            @foreach (var notice in Model)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 border-0 shadow-sm" style="border-radius: 16px; overflow: hidden; background: #fff;">
+                        <div class="card-body p-4 d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <span class="badge bg-danger-soft text-danger py-2 px-3 fw-bold" style="border-radius: 8px;">
+                                    <i class="far fa-bell me-1"></i> Notice
+                                </span>
+                                <span class="text-muted small">@notice.PublishedAt.ToString("MMM dd, yyyy")</span>
+                            </div>
+                            
+                            <h4 class="card-title fw-bold text-dark mb-2">@notice.Title</h4>
+                            <p class="card-text text-muted flex-grow-1">@notice.Description</p>
+                            
+                            <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
+                                <span class="text-muted small"><i class="far fa-file-pdf text-danger me-1"></i> PDF File</span>
+                                <div class="d-flex gap-2">
+                                    <a href="@notice.FilePath" target="_blank" class="btn btn-outline-danger btn-sm px-3" style="border-radius: 8px;">
+                                        <i class="far fa-eye me-1"></i> Read
+                                    </a>
+                                    <a href="@notice.FilePath" download class="btn btn-danger btn-sm px-3" style="border-radius: 8px;">
+                                        <i class="fas fa-download me-1"></i> Download
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<style>
+    .bg-danger-soft {
+        background-color: rgba(220, 53, 69, 0.1);
+    }
+</style>

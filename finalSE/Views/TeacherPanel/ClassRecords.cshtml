@@ -1,0 +1,210 @@
+@model IEnumerable<finalSE.Models.ClassRecord>
+
+@{
+    ViewData["Title"] = "Class Records Management";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div class="d-flex align-items-center">
+            <a asp-action="Index" class="btn btn-outline-secondary me-3" style="border-radius: 8px;">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div>
+                <h2 class="fw-bold text-dark m-0"><i class="fas fa-video text-success me-2"></i>Class Records</h2>
+                <p class="text-muted m-0">Upload new class video recordings or share links (Drive, YouTube, etc.)</p>
+            </div>
+        </div>
+        <button class="btn btn-success-premium" type="button" data-bs-toggle="collapse" data-bs-target="#uploadCollapse">
+            <i class="fas fa-plus me-2"></i>Upload Record
+        </button>
+    </div>
+
+    <!-- Alert notifications -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Upload Form Collapse -->
+    <div class="collapse mb-4" id="uploadCollapse">
+        <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+            <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+                <h4 class="fw-bold m-0"><i class="fas fa-upload text-success me-2"></i>Add Class Record</h4>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="UploadClassRecord" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Class Title</label>
+                            <input type="text" name="title" class="form-control" placeholder="e.g. Physics 101 - Lecture 5" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Upload Type</label>
+                            <select name="uploadType" id="uploadTypeSelect" class="form-select" onchange="toggleUploadTypeFields()" required>
+                                <option value="Link">Web Link (YouTube / Google Drive)</option>
+                                <option value="File">Upload Video File</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Description (Optional)</label>
+                            <textarea name="description" class="form-control" rows="2" placeholder="Provide a short overview of the class contents..."></textarea>
+                        </div>
+                        
+                        <!-- Link Input Field -->
+                        <div class="col-12" id="linkField">
+                            <label class="form-label fw-semibold">Video Link / URL</label>
+                            <input type="url" name="link" class="form-control" placeholder="https://youtube.com/watch?v=... or Google Drive URL" />
+                            <div class="form-text">Paste the full URL to the video recording hosted online.</div>
+                        </div>
+                        
+                        <!-- File Input Field -->
+                        <div class="col-12 d-none" id="fileField">
+                            <label class="form-label fw-semibold">Video File</label>
+                            <input type="file" name="file" class="form-control" accept="video/*" />
+                            <div class="form-text">Upload MP4 or other video files. (Max recommended: 100MB)</div>
+                        </div>
+
+                        <div class="col-12 d-flex justify-content-end gap-2 border-top pt-3 mt-4">
+                            <button type="button" class="btn btn-light" data-bs-toggle="collapse" data-bs-target="#uploadCollapse">Cancel</button>
+                            <button type="submit" class="btn btn-success px-4">Save Record</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Records List -->
+    <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Title</th>
+                            <th>Description</th>
+                            <th>Source Type</th>
+                            <th>Uploaded At</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    <i class="fas fa-video-slash fa-3x mb-3"></i>
+                                    <p class="mb-0">You haven't uploaded any class records yet.</p>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var record in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4 fw-semibold text-dark">@record.Title</td>
+                                    <td class="text-muted text-truncate" style="max-width: 250px;">
+                                        @(string.IsNullOrEmpty(record.Description) ? "No description" : record.Description)
+                                    </td>
+                                    <td>
+                                        @if (record.UploadType == "Link")
+                                        {
+                                            <span class="badge bg-info-soft text-info px-3 py-2 fw-semibold" style="border-radius: 8px;">
+                                                <i class="fas fa-link me-1"></i> Link
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success-soft text-success px-3 py-2 fw-semibold" style="border-radius: 8px;">
+                                                <i class="fas fa-file-video me-1"></i> File
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="text-muted">@record.UploadedAt.ToString("g")</td>
+                                    <td class="text-end pe-4">
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <a href="@record.FilePathOrLink" target="_blank" class="btn btn-outline-primary btn-sm px-3" style="border-radius: 8px;">
+                                                <i class="fas fa-play me-1"></i> Play / View
+                                            </a>
+                                            <form asp-action="DeleteClassRecord" method="post" onsubmit="return confirm('Are you sure you want to delete this class record?');" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@record.Id" />
+                                                <button type="submit" class="btn btn-outline-danger btn-sm" style="border-radius: 8px;" title="Delete">
+                                                    <i class="fas fa-trash-can"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-info-soft {
+        background-color: rgba(13, 202, 240, 0.1);
+    }
+    .bg-success-soft {
+        background-color: rgba(25, 135, 84, 0.1);
+    }
+    .btn-success-premium {
+        background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 0.6rem 1.2rem;
+        font-weight: 600;
+        box-shadow: 0 4px 10px rgba(25, 135, 84, 0.2);
+        transition: all 0.2s;
+    }
+    .btn-success-premium:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(25, 135, 84, 0.35);
+        color: white;
+    }
+</style>
+
+<script>
+    function toggleUploadTypeFields() {
+        const select = document.getElementById('uploadTypeSelect');
+        const linkField = document.getElementById('linkField');
+        const fileField = document.getElementById('fileField');
+        
+        if (select.value === 'Link') {
+            linkField.classList.remove('d-none');
+            fileField.classList.add('d-none');
+            // make fields required/optional accordingly
+            linkField.querySelector('input').setAttribute('required', 'required');
+            fileField.querySelector('input').removeAttribute('required');
+        } else {
+            linkField.classList.add('d-none');
+            fileField.classList.remove('d-none');
+            linkField.querySelector('input').removeAttribute('required');
+            fileField.querySelector('input').setAttribute('required', 'required');
+        }
+    }
+    
+    // Initial call
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleUploadTypeFields();
+    });
+</script>

@@ -1,0 +1,89 @@
+@model IEnumerable<finalSE.Models.ClassRecord>
+
+@{
+    ViewData["Title"] = "Class Video Records";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div class="d-flex align-items-center">
+            <a asp-action="Index" class="btn btn-outline-secondary me-3" style="border-radius: 8px;">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div>
+                <h2 class="fw-bold text-dark m-0"><i class="fas fa-video text-success me-2"></i>Class Video Records</h2>
+                <p class="text-muted m-0">Watch recorded lectures and class videos posted by your course teachers</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search bar -->
+    <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+        <div class="card-body p-3">
+            <form method="get" class="row g-2">
+                <div class="col-md-10">
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="fas fa-search"></i></span>
+                        <input type="text" name="search" value="@ViewBag.Search" class="form-control border-start-0" placeholder="Search by class title, description, or teacher's name..." />
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100" style="border-radius: 8px;">Search</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Videos Grid -->
+    <div class="row">
+        @if (!Model.Any())
+        {
+            <div class="col-12 text-center py-5 text-muted">
+                <i class="fas fa-video-slash fa-3x mb-3"></i>
+                <p class="fs-5">No class records found.</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var record in Model)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 border-0 shadow-sm" style="border-radius: 16px; overflow: hidden; background: #fff;">
+                        <!-- Video Thumbnail Placeholder -->
+                        <div style="height: 180px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); display: flex; align-items: center; justify-content: center; position: relative;">
+                            <div class="text-white text-center">
+                                <span class="fs-1 text-success opacity-75"><i class="fas fa-circle-play"></i></span>
+                                <div class="mt-2 small text-slate-300">Recorded Lecture</div>
+                            </div>
+                            <span class="position-absolute top-0 end-0 m-3 badge @(record.UploadType == "Link" ? "bg-info" : "bg-success") px-2 py-1" style="border-radius: 6px;">
+                                @record.UploadType
+                            </span>
+                        </div>
+                        
+                        <div class="card-body p-4 d-flex flex-column">
+                            <h4 class="fw-bold text-dark mb-2">@record.Title</h4>
+                            <p class="text-muted small flex-grow-1">@record.Description</p>
+                            
+                            <div class="mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="small fw-semibold text-dark"><i class="fas fa-chalkboard-teacher me-1 text-primary"></i> @(record.Teacher?.Name ?? "Teacher")</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">@record.UploadedAt.ToString("MMM dd, yyyy")</div>
+                                </div>
+                                <a href="@record.FilePathOrLink" target="_blank" class="btn btn-success btn-sm px-3" style="border-radius: 8px;">
+                                    <i class="fas fa-play me-1"></i> Watch
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<style>
+    .text-slate-300 {
+        color: #cbd5e1 !important;
+    }
+</style>

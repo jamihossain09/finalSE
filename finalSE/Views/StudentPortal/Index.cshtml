@@ -1,0 +1,176 @@
+@{
+    ViewData["Title"] = "Student Portal Dashboard";
+    var student = ViewBag.Student as finalSE.Models.StudentModel;
+    var recentNotices = ViewBag.RecentNotices as IEnumerable<finalSE.Models.Notice>;
+}
+
+<div class="container-fluid py-4 animate-up">
+    <!-- Welcome section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="p-5 text-white rounded-5 shadow-lg position-relative overflow-hidden" 
+                 style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 24px;">
+                <div class="position-relative z-index-1">
+                    <span class="badge bg-primary px-3 py-2 fs-7 fw-semibold mb-3" style="border-radius: 8px;">
+                        <i class="fas fa-graduation-cap me-1"></i> Student Portal
+                    </span>
+                    <h1 class="fw-bold display-5 mb-2">Hello, @student?.Name!</h1>
+                    <p class="fs-5 text-slate-300 mb-0">Department of @(student?.Department?.DepartmentName ?? "N/A") &bull; Age: @student?.Age</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <a asp-action="ClassRecords" class="text-decoration-none card border-0 shadow-sm h-100 p-3" style="border-radius: 20px; transition: transform 0.2s;">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div style="width: 50px; height: 50px; background: rgba(79, 70, 229, 0.1); color: #4f46e5; border-radius: 12px; display: flex; align-items: center; justify-content: center;" class="fs-4">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted fw-semibold mb-1">Class Records</h6>
+                        <h3 class="fw-bold text-dark m-0">@ViewBag.ClassRecordsCount</h3>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a asp-action="Tutorials" class="text-decoration-none card border-0 shadow-sm h-100 p-3" style="border-radius: 20px; transition: transform 0.2s;">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div style="width: 50px; height: 50px; background: rgba(16, 185, 129, 0.1); color: #10b981; border-radius: 12px; display: flex; align-items: center; justify-content: center;" class="fs-4">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted fw-semibold mb-1">Tutorials & Slides</h6>
+                        <h3 class="fw-bold text-dark m-0">@ViewBag.TutorialsCount</h3>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a asp-action="Assignments" class="text-decoration-none card border-0 shadow-sm h-100 p-3" style="border-radius: 20px; transition: transform 0.2s;">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div style="width: 50px; height: 50px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-radius: 12px; display: flex; align-items: center; justify-content: center;" class="fs-4">
+                        <i class="fas fa-file-signature"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted fw-semibold mb-1">Active Tasks</h6>
+                        <h3 class="fw-bold text-dark m-0">@ViewBag.AssignmentsCount</h3>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a asp-action="Notices" class="text-decoration-none card border-0 shadow-sm h-100 p-3" style="border-radius: 20px; transition: transform 0.2s;">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div style="width: 50px; height: 50px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border-radius: 12px; display: flex; align-items: center; justify-content: center;" class="fs-4">
+                        <i class="fas fa-bullhorn"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted fw-semibold mb-1">Notices</h6>
+                        <h3 class="fw-bold text-dark m-0">@ViewBag.NoticesCount</h3>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content Split -->
+    <div class="row g-4">
+        <!-- Quick links -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: 24px;">
+                <h3 class="fw-bold mb-4">Academic Resources</h3>
+                <div class="d-grid gap-3">
+                    <a asp-action="ClassRecords" class="d-flex align-items-center p-3 rounded-4 border text-decoration-none hover-bg" style="transition: background 0.2s;">
+                        <span class="fs-3 text-success me-3"><i class="fas fa-circle-play"></i></span>
+                        <div>
+                            <h5 class="fw-bold text-dark mb-1">Class Video Records</h5>
+                            <p class="text-muted small mb-0">Watch class video recordings posted by teachers</p>
+                        </div>
+                        <span class="ms-auto text-muted"><i class="fas fa-chevron-right"></i></span>
+                    </a>
+                    
+                    <a asp-action="Tutorials" class="d-flex align-items-center p-3 rounded-4 border text-decoration-none hover-bg" style="transition: background 0.2s;">
+                        <span class="fs-3 text-info me-3"><i class="fas fa-file-pdf"></i></span>
+                        <div>
+                            <h5 class="fw-bold text-dark mb-1">Tutorials & Slides</h5>
+                            <p class="text-muted small mb-0">Read tutorials, PPT slides and homework files</p>
+                        </div>
+                        <span class="ms-auto text-muted"><i class="fas fa-chevron-right"></i></span>
+                    </a>
+
+                    <a asp-action="Assignments" class="d-flex align-items-center p-3 rounded-4 border text-decoration-none hover-bg" style="transition: background 0.2s;">
+                        <span class="fs-3 text-warning me-3"><i class="fas fa-tasks"></i></span>
+                        <div>
+                            <h5 class="fw-bold text-dark mb-1">Assignments</h5>
+                            <p class="text-muted small mb-0">Check homework assignments and deadlines</p>
+                        </div>
+                        <span class="ms-auto text-muted"><i class="fas fa-chevron-right"></i></span>
+                    </a>
+
+                    <a asp-action="Routines" class="d-flex align-items-center p-3 rounded-4 border text-decoration-none hover-bg" style="transition: background 0.2s;">
+                        <span class="fs-3 text-primary me-3"><i class="fas fa-calendar-alt"></i></span>
+                        <div>
+                            <h5 class="fw-bold text-dark mb-1">Class & Exam Routines</h5>
+                            <p class="text-muted small mb-0">View latest routines published by admin</p>
+                        </div>
+                        <span class="ms-auto text-muted"><i class="fas fa-chevron-right"></i></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Notices -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: 24px;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="fw-bold m-0">Recent Notices</h3>
+                    <a asp-action="Notices" class="btn btn-link text-primary p-0 text-decoration-none fw-semibold">View All <i class="fas fa-arrow-right small ms-1"></i></a>
+                </div>
+                
+                <div class="d-flex flex-column gap-3">
+                    @if (recentNotices == null || !recentNotices.Any())
+                    {
+                        <div class="text-center py-4 text-muted">
+                            <i class="far fa-bell fa-2x mb-2"></i>
+                            <p class="mb-0">No recent notices available</p>
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var notice in recentNotices)
+                        {
+                            <div class="p-3 rounded-4 border">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="badge bg-danger-soft text-danger fw-bold"><i class="far fa-bell me-1"></i> Important</span>
+                                    <span class="text-muted small">@notice.PublishedAt.ToString("MMM dd, yyyy")</span>
+                                </div>
+                                <h5 class="fw-bold text-dark mb-1">@notice.Title</h5>
+                                <p class="text-muted small mb-2">@notice.Description</p>
+                                <a href="@notice.FilePath" target="_blank" class="btn btn-outline-danger btn-sm" style="border-radius: 6px;">
+                                    <i class="far fa-file-pdf me-1"></i> Read PDF
+                                </a>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-bg:hover {
+        background-color: #f8fafc;
+        border-color: #cbd5e1 !important;
+    }
+    .bg-danger-soft {
+        background-color: rgba(239, 68, 68, 0.1);
+    }
+    .text-slate-300 {
+        color: #cbd5e1 !important;
+    }
+</style>

@@ -22,6 +22,14 @@ public class MyDBContext : DbContext
     public DbSet<Routine> Routines { get; set; }
     
     public DbSet<Invitation> Invitations { get; set; }
+
+    public DbSet<ClassRecord> ClassRecords { get; set; }
+
+    public DbSet<Tutorial> Tutorials { get; set; }
+
+    public DbSet<AssignmentTask> AssignmentTasks { get; set; }
+
+    public DbSet<Notice> Notices { get; set; }
     // 🔥 THIS PART YOU NEED TO ADD
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

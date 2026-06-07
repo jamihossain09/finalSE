@@ -1,0 +1,94 @@
+@model IEnumerable<finalSE.Models.AssignmentTask>
+
+@{
+    ViewData["Title"] = "Academic Assignments";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div class="d-flex align-items-center">
+            <a asp-action="Index" class="btn btn-outline-secondary me-3" style="border-radius: 8px;">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div>
+                <h2 class="fw-bold text-dark m-0"><i class="fas fa-file-signature text-warning me-2"></i>Assignments</h2>
+                <p class="text-muted m-0">View all assignments, task outlines, deadlines and instruction files</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assignments List -->
+    <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Title</th>
+                            <th>Description</th>
+                            <th>Course Teacher</th>
+                            <th>Due Date</th>
+                            <th>Attachment</th>
+                            <th class="pe-4 text-end">Published At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    <i class="fas fa-file-signature fa-3x mb-3"></i>
+                                    <p class="mb-0">No assignments assigned yet.</p>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var assignment in Model)
+                            {
+                                var isOverdue = assignment.DueDate < DateTime.Now;
+                                <tr>
+                                    <td class="ps-4 fw-semibold text-dark">@assignment.Title</td>
+                                    <td class="text-muted text-truncate" style="max-width: 250px;" title="@assignment.Description">
+                                        @assignment.Description
+                                    </td>
+                                    <td>
+                                        <span class="small fw-semibold text-dark"><i class="fas fa-user-circle text-primary me-1"></i> @(assignment.Teacher?.Name ?? "Teacher")</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge @(isOverdue ? "bg-danger-soft text-danger" : "bg-warning-soft text-warning") px-3 py-2 fw-semibold" style="border-radius: 8px;">
+                                            <i class="far fa-clock me-1"></i> @assignment.DueDate.ToString("g")
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(assignment.FilePath))
+                                        {
+                                            <a href="@assignment.FilePath" target="_blank" class="btn btn-link text-primary p-0 text-decoration-none">
+                                                <i class="fas fa-paperclip me-1"></i> View / Download File
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">None</span>
+                                        }
+                                    </td>
+                                    <td class="text-muted small pe-4 text-end">@assignment.CreatedAt.ToString("g")</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-danger-soft {
+        background-color: rgba(220, 53, 69, 0.1);
+    }
+    .bg-warning-soft {
+        background-color: rgba(255, 193, 7, 0.15);
+    }
+</style>

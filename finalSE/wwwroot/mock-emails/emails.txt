@@ -1,0 +1,88 @@
+[MOCK EMAIL SENT - 5/20/2026 6:47:51 PM]
+To: yaariaanromen@gmail.com
+Subject: Invitation Link
+Body: 
+                <h2>You're Invited!</h2>
+                <p>Click below to join:</p>
+                <a href='https://localhost:5001/Account/RegisterWithToken?token=64a13c5b-935b-4c86-b731-a6a0095df2f6'>Register Here</a>
+                <p>This link expires in 24 hours.</p>
+            
+-------------------------------------------------
+
+[MOCK EMAIL SENT - 5/20/2026 6:48:00 PM]
+To: yaariaanromen@gmail.com
+Subject: Invitation Link
+Body: 
+                <h2>You're Invited!</h2>
+                <p>Click below to join:</p>
+                <a href='https://localhost:5001/Account/RegisterWithToken?token=64a13c5b-935b-4c86-b731-a6a0095df2f6'>Register Here</a>
+                <p>This link expires in 24 hours.</p>
+            
+-------------------------------------------------
+
+[MOCK EMAIL SENT - 5/20/2026 6:55:42 PM]
+To: romenpaul01@gmail.com
+Subject: Invitation Link
+Body: 
+                <h2>You're Invited!</h2>
+                <p>Click below to join:</p>
+                <a href='https://localhost:5001/Account/RegisterWithToken?token=f54d87f1-2570-4bca-ba1c-2b8e9d1d1cd2'>Register Here</a>
+                <p>This link expires in 24 hours.</p>
+            
+-------------------------------------------------
+
+[MOCK EMAIL SENT - 5/20/2026 10:53:28 PM]
+To: romenpaul38@gmail.com
+Subject: Invitation Link
+Body: 
+                <h2>You're Invited!</h2>
+                <p>Click below to join:</p>
+                <a href='https://localhost:5001/Account/RegisterWithToken?token=5e1d7adb-d5e3-4a06-8526-e2782de539eb'>Register Here</a>
+                <p>This link expires in 24 hours.</p>
+            
+-------------------------------------------------
+
+[MOCK EMAIL SENT - 5/20/2026 10:53:37 PM]
+To: romenpaul38@gmail.com
+Subject: Invitation Link
+Body: 
+                <h2>You're Invited!</h2>
+                <p>Click below to join:</p>
+                <a href='https://localhost:5001/Account/RegisterWithToken?token=5e1d7adb-d5e3-4a06-8526-e2782de539eb'>Register Here</a>
+                <p>This link expires in 24 hours.</p>
+            
+-------------------------------------------------
+
+[MOCK EMAIL SENT - 6/6/2026 11:24:11 PM]
+To: romenpaul01@gmail.com
+Subject: Invitation Link
+Body: 
+                <h2>You're Invited!</h2>
+                <p>Click below to join:</p>
+                <a href='https://localhost:5001/Account/RegisterWithToken?token=f54d87f1-2570-4bca-ba1c-2b8e9d1d1cd2'>Register Here</a>
+                <p>This link expires in 24 hours.</p>
+            
+-------------------------------------------------
+
+[MOCK EMAIL SENT - 6/6/2026 11:25:21 PM]
+To: yaariaanromen@gmail.com
+Subject: Invitation Link
+Body: 
+                <h2>You're Invited!</h2>
+                <p>Click below to join:</p>
+                <a href='https://localhost:5001/Account/RegisterWithToken?token=2e2f6649-bfd1-491c-ad60-ccdb7a7ba122'>Register Here</a>
+                <p>This link expires in 24 hours.</p>
+            
+-------------------------------------------------
+
+[MOCK EMAIL SENT - 6/6/2026 11:46:35 PM]
+To: test@example.com
+Subject: Invitation Link
+Body: 
+                <h2>You're Invited!</h2>
+                <p>Click below to join:</p>
+                <a href='https://localhost:5001/Account/RegisterWithToken?token=7ece184e-c3b7-4ab6-8924-fcda704a2e25'>Register Here</a>
+                <p>This link expires in 24 hours.</p>
+            
+-------------------------------------------------
+

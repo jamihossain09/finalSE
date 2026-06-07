@@ -1,0 +1,125 @@
+@{
+    ViewData["Title"] = "Teacher Portal Dashboard";
+    var teacher = ViewBag.Teacher as finalSE.Models.Teacher;
+}
+
+<div class="container-fluid py-4 animate-up">
+    <!-- Welcome section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="p-5 text-white rounded-5 shadow-lg position-relative overflow-hidden" 
+                 style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); border-radius: 24px;">
+                <div class="position-relative z-index-1">
+                    <span class="badge bg-white bg-opacity-20 text-white px-3 py-2 fs-7 fw-semibold mb-3" style="border-radius: 8px;">
+                        <i class="fas fa-chalkboard-teacher me-1"></i> Teacher Portal
+                    </span>
+                    <h1 class="fw-bold display-5 mb-2">Welcome Back, @teacher?.Name!</h1>
+                    <p class="fs-5 text-white-50 mb-0">Department of @(teacher?.Department?.DepartmentName ?? "N/A") &bull; @teacher?.Email</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 p-3" style="border-radius: 20px; transition: transform 0.2s;">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div style="width: 56px; height: 56px; background: rgba(79, 70, 229, 0.1); color: #4f46e5; border-radius: 16px; display: flex; align-items: center; justify-content: center;" class="fs-3">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted fw-semibold mb-1">Class Records</h6>
+                        <h3 class="fw-bold m-0">@ViewBag.ClassRecordsCount</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 p-3" style="border-radius: 20px; transition: transform 0.2s;">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div style="width: 56px; height: 56px; background: rgba(16, 185, 129, 0.1); color: #10b981; border-radius: 16px; display: flex; align-items: center; justify-content: center;" class="fs-3">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted fw-semibold mb-1">Tutorials / Slides</h6>
+                        <h3 class="fw-bold m-0">@ViewBag.TutorialsCount</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 p-3" style="border-radius: 20px; transition: transform 0.2s;">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div style="width: 56px; height: 56px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-radius: 16px; display: flex; align-items: center; justify-content: center;" class="fs-3">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted fw-semibold mb-1">Assignments Posted</h6>
+                        <h3 class="fw-bold m-0">@ViewBag.AssignmentsCount</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick actions Grid -->
+    <h3 class="fw-bold mb-4">Quick Management Actions</h3>
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-3">
+            <a asp-action="Routines" class="text-decoration-none card border-0 shadow-sm action-card h-100" style="border-radius: 20px;">
+                <div class="card-body p-4 text-center">
+                    <div class="mx-auto mb-3 text-primary fs-2" style="width: 60px; height: 60px; background: rgba(13, 110, 253, 0.08); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2">View Routines</h5>
+                    <p class="text-muted small mb-0">Check the class and exam routines uploaded by Admin</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <a asp-action="ClassRecords" class="text-decoration-none card border-0 shadow-sm action-card h-100" style="border-radius: 20px;">
+                <div class="card-body p-4 text-center">
+                    <div class="mx-auto mb-3 text-success fs-2" style="width: 60px; height: 60px; background: rgba(25, 135, 84, 0.08); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2">Class Records</h5>
+                    <p class="text-muted small mb-0">Upload or link recorded lectures for student reference</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <a asp-action="Tutorials" class="text-decoration-none card border-0 shadow-sm action-card h-100" style="border-radius: 20px;">
+                <div class="card-body p-4 text-center">
+                    <div class="mx-auto mb-3 text-info fs-2" style="width: 60px; height: 60px; background: rgba(13, 202, 240, 0.08); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-file-pdf"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2">Tutorials & Slides</h5>
+                    <p class="text-muted small mb-0">Publish PDF or PPT lecture notes and study material</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <a asp-action="Assignments" class="text-decoration-none card border-0 shadow-sm action-card h-100" style="border-radius: 20px;">
+                <div class="card-body p-4 text-center">
+                    <div class="mx-auto mb-3 text-warning fs-2" style="width: 60px; height: 60px; background: rgba(255, 193, 7, 0.08); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-file-signature"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2">Assignments</h5>
+                    <p class="text-muted small mb-0">Create new tasks, deadlines and worksheets for students</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .action-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .action-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        border: 1px solid rgba(79, 70, 229, 0.15) !important;
+    }
+</style>

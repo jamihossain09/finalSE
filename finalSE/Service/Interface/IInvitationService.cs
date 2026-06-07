@@ -1,4 +1,4 @@
-﻿using finalSE.Models;
+using finalSE.Models;
 
 namespace finalSE.Service.Interface
 {
@@ -11,5 +11,7 @@ namespace finalSE.Service.Interface
         Task<List<Invitation>> GetAllAsync();
 
         Task<bool> AcceptInvitationAsync(string token);
+
+        Task ResendInvitationEmailAsync(string token, string email);
     }
 }

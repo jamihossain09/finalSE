@@ -1,0 +1,168 @@
+@model IEnumerable<finalSE.Models.Tutorial>
+
+@{
+    ViewData["Title"] = "Tutorials & Slides Management";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div class="d-flex align-items-center">
+            <a asp-action="Index" class="btn btn-outline-secondary me-3" style="border-radius: 8px;">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div>
+                <h2 class="fw-bold text-dark m-0"><i class="fas fa-file-pdf text-info me-2"></i>Tutorials & Lecture Slides</h2>
+                <p class="text-muted m-0">Publish PDF documents, PPT/PPTX slides, and add reference video links</p>
+            </div>
+        </div>
+        <button class="btn btn-info-premium text-white" type="button" data-bs-toggle="collapse" data-bs-target="#uploadCollapse">
+            <i class="fas fa-plus me-2"></i>Publish Material
+        </button>
+    </div>
+
+    <!-- Alert notifications -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Upload Form Collapse -->
+    <div class="collapse mb-4" id="uploadCollapse">
+        <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+            <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+                <h4 class="fw-bold m-0"><i class="fas fa-upload text-info me-2"></i>Upload Study Material</h4>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="UploadTutorial" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Material Title</label>
+                            <input type="text" name="title" class="form-control" placeholder="e.g. Chapter 3: Quantum Mechanics Basics" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">PDF or PPT / PPTX Document</label>
+                            <input type="file" name="file" class="form-control" accept=".pdf,.ppt,.pptx" />
+                            <div class="form-text">Upload PDF notes or PowerPoint presentation slides.</div>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Reference Video Link (Optional)</label>
+                            <input type="url" name="videoLink" class="form-control" placeholder="https://youtube.com/watch?v=... or Drive video link" />
+                            <div class="form-text">Include a video tutorial link that students can click to watch.</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Description / Notes (Optional)</label>
+                            <textarea name="description" class="form-control" rows="2" placeholder="Brief instruction or study guidelines for students..."></textarea>
+                        </div>
+
+                        <div class="col-12 d-flex justify-content-end gap-2 border-top pt-3 mt-4">
+                            <button type="button" class="btn btn-light" data-bs-toggle="collapse" data-bs-target="#uploadCollapse">Cancel</button>
+                            <button type="submit" class="btn btn-info text-white px-4" style="border-radius: 8px;">Upload Material</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tutorials List -->
+    <div class="row">
+        @if (!Model.Any())
+        {
+            <div class="col-12 text-center py-5 text-muted">
+                <i class="far fa-folder-open fa-3x mb-3"></i>
+                <p class="fs-5">No study materials published yet.</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var tutorial in Model)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 border-0 shadow-sm" style="border-radius: 16px; overflow: hidden; background: #fff;">
+                        <div class="card-body p-4 d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <span class="badge bg-light text-info py-2 px-3 fw-bold" style="border-radius: 8px;">
+                                    <i class="far fa-calendar-alt me-1"></i> @tutorial.UploadedAt.ToString("MMM dd, yyyy")
+                                </span>
+                                <form asp-action="DeleteTutorial" method="post" onsubmit="return confirm('Are you sure you want to delete this study material?');" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@tutorial.Id" />
+                                    <button type="submit" class="btn btn-link text-danger p-0 border-0" title="Delete">
+                                        <i class="fas fa-trash-can"></i>
+                                    </button>
+                                </form>
+                            </div>
+                            
+                            <h4 class="card-title fw-bold text-dark mb-2">@tutorial.Title</h4>
+                            <p class="card-text text-muted flex-grow-1">@tutorial.Description</p>
+                            
+                            <div class="mt-4 pt-3 border-top">
+                                <div class="d-flex flex-column gap-2">
+                                    @if (!string.IsNullOrEmpty(tutorial.FilePath))
+                                    {
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="small text-muted">
+                                                @if (tutorial.FilePath.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+                                                {
+                                                    <i class="far fa-file-pdf text-danger me-1"></i> <span>PDF Document</span>
+                                                }
+                                                else
+                                                {
+                                                    <i class="far fa-file-powerpoint text-warning me-1"></i> <span>PowerPoint Slide</span>
+                                                }
+                                            </span>
+                                            <div class="d-flex gap-2">
+                                                <a href="@tutorial.FilePath" target="_blank" class="btn btn-outline-secondary btn-sm px-3" style="border-radius: 8px;">View</a>
+                                                <a href="@tutorial.FilePath" download class="btn btn-secondary btn-sm px-3" style="border-radius: 8px;">Download</a>
+                                            </div>
+                                        </div>
+                                    }
+                                    @if (!string.IsNullOrEmpty(tutorial.VideoLink))
+                                    {
+                                        <div class="d-flex justify-content-between align-items-center @(!string.IsNullOrEmpty(tutorial.FilePath) ? "mt-2 pt-2 border-top border-dashed" : "")">
+                                            <span class="small text-muted"><i class="fas fa-video text-success me-1"></i> Video Class</span>
+                                            <a href="@tutorial.VideoLink" target="_blank" class="btn btn-primary btn-sm px-3" style="border-radius: 8px;">
+                                                <i class="fas fa-play me-1"></i> Watch Video
+                                            </a>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<style>
+    .btn-info-premium {
+        background: linear-gradient(135deg, #0dcaf0 0%, #0d6efd 100%);
+        border: none;
+        border-radius: 10px;
+        padding: 0.6rem 1.2rem;
+        font-weight: 600;
+        box-shadow: 0 4px 10px rgba(13, 202, 240, 0.2);
+        transition: all 0.2s;
+    }
+    .btn-info-premium:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(13, 202, 240, 0.35);
+    }
+    .border-top.border-dashed {
+        border-top-style: dashed !important;
+    }
+</style>

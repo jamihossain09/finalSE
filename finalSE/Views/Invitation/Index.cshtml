@@ -1,6 +1,25 @@
 @model IEnumerable<finalSE.Models.Invitation>
 
+@{
+    ViewData["Title"] = "Invitations";
+}
+
 <h2>Invitations</h2>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
+        <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i> @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
 
 <a asp-action="Create" class="btn btn-success mb-3">
     Send New Invitation
@@ -34,13 +53,30 @@
                     @if (!item.IsUsed)
                     {
                         var registrationLink = $"{Context.Request.Scheme}://{Context.Request.Host}/Account/RegisterWithToken?token={item.Token}";
-                        <button class="btn btn-primary btn-sm" onclick="navigator.clipboard.writeText('@registrationLink'); alert('Link copied to clipboard!');">
-                            Copy Link
-                        </button>
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                            <button class="btn btn-primary btn-sm" onclick="navigator.clipboard.writeText('@registrationLink'); alert('Link copied to clipboard!');">
+                                <i class="fas fa-copy"></i> Copy Link
+                            </button>
+                            
+                            <button class="btn btn-outline-info btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#emailForm-@item.Id">
+                                <i class="fas fa-envelope"></i> Send Email
+                            </button>
+                        </div>
+                        
+                        <div class="collapse mt-2" id="emailForm-@item.Id" style="max-width: 250px;">
+                            <form asp-action="ResendEmail" method="post" class="input-group input-group-sm">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="token" value="@item.Token" />
+                                <input type="email" name="email" value="@item.Email" class="form-control" placeholder="Recipient email" required />
+                                <button class="btn btn-info text-white" type="submit">
+                                    <i class="fas fa-paper-plane"></i> Send
+                                </button>
+                            </form>
+                        </div>
                     }
                     else
                     {
-                        <span class="text-success">Joined</span>
+                        <span class="text-success"><i class="fas fa-check-circle"></i> Joined</span>
                     }
                 </td>
             </tr>

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -39,35 +39,52 @@
                     <div style="width: 40px; height: 40px; background: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
                         <i class="fas fa-school"></i>
                     </div>
-                    <span>SMS Admin</span>
+                    <span>
+                        @if (User.IsInRole("Admin")) { <text>SMS Admin</text> }
+                        else if (User.IsInRole("Teacher")) { <text>Teacher Portal</text> }
+                        else if (User.IsInRole("Student")) { <text>Student Portal</text> }
+                        else { <text>SMS Portal</text> }
+                    </span>
                 </div>
                 <nav class="sidebar-menu">
-                    <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "active" : "")"
-                           asp-controller="Home" asp-action="Index">
-                        <i class="fas fa-chart-pie"></i>
-                        Dashboard
-                    </a>
-                    
-                    <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Student" ? "active" : "")"
-                           asp-controller="Student" asp-action="Index">
-                        <i class="fas fa-user-graduate"></i>
-                        Student
-                    </a>
-
-                    <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Teacher" ? "active" : "")"
-                           asp-controller="Teacher" asp-action="Index">
-                        <i class="fas fa-chalkboard-teacher"></i>
-                        Teacher
-                    </a>
-
-                    <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Routine" ? "active" : "")"
-                           asp-controller="Routine" asp-action="Index">
-                        <i class="fas fa-calendar-days"></i>
-                        Routine
-                    </a>
-
                     @if (User.IsInRole("Admin"))
                     {
+                        <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "active" : "")"
+                               asp-controller="Home" asp-action="Index">
+                            <i class="fas fa-chart-pie"></i>
+                            Dashboard
+                        </a>
+                        
+                        <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Student" ? "active" : "")"
+                               asp-controller="Student" asp-action="Index">
+                            <i class="fas fa-user-graduate"></i>
+                            Students
+                        </a>
+
+                        <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Teacher" ? "active" : "")"
+                               asp-controller="Teacher" asp-action="Index">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                            Teachers
+                        </a>
+
+                        <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Routine" ? "active" : "")"
+                               asp-controller="Routine" asp-action="Index">
+                            <i class="fas fa-calendar-days"></i>
+                            Routines
+                        </a>
+
+                        <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Notice" ? "active" : "")"
+                               asp-controller="Notice" asp-action="Index">
+                            <i class="fas fa-bullhorn"></i>
+                            Notice Board
+                        </a>
+
+                        <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Invitation" ? "active" : "")"
+                               asp-controller="Invitation" asp-action="Index">
+                            <i class="fas fa-envelope-open-text"></i>
+                            Invitations
+                        </a>
+
                         <div style="padding: 2rem 1.5rem 0.5rem; font-size: 0.7rem; text-transform: uppercase; color: #475569; font-weight: 800; letter-spacing: 0.1em;">Administration</div>
                         <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "User" ? "active" : "")"
                                asp-controller="User" asp-action="Index">
@@ -78,6 +95,82 @@
                                asp-controller="Role" asp-action="Index">
                             <i class="fas fa-key"></i>
                             Permissions
+                        </a>
+                    }
+                    else if (User.IsInRole("Teacher"))
+                    {
+                        <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "TeacherPanel" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")"
+                               asp-controller="TeacherPanel" asp-action="Index">
+                            <i class="fas fa-chart-pie"></i>
+                            Dashboard
+                        </a>
+
+                        <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "TeacherPanel" && ViewContext.RouteData.Values["Action"]?.ToString() == "ClassRecords" ? "active" : "")"
+                               asp-controller="TeacherPanel" asp-action="ClassRecords">
+                            <i class="fas fa-video"></i>
+                            Class Records
+                        </a>
+
+                        <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "TeacherPanel" && ViewContext.RouteData.Values["Action"]?.ToString() == "Tutorials" ? "active" : "")"
+                               asp-controller="TeacherPanel" asp-action="Tutorials">
+                            <i class="fas fa-file-pdf"></i>
+                            Tutorials & Slides
+                        </a>
+
+                        <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "TeacherPanel" && ViewContext.RouteData.Values["Action"]?.ToString() == "Assignments" ? "active" : "")"
+                               asp-controller="TeacherPanel" asp-action="Assignments">
+                            <i class="fas fa-tasks"></i>
+                            Assignments
+                        </a>
+
+                        <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "TeacherPanel" && ViewContext.RouteData.Values["Action"]?.ToString() == "Routines" ? "active" : "")"
+                               asp-controller="TeacherPanel" asp-action="Routines">
+                            <i class="fas fa-calendar-days"></i>
+                            Routines
+                        </a>
+
+                        <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Notice" ? "active" : "")"
+                               asp-controller="Notice" asp-action="Index">
+                            <i class="fas fa-bullhorn"></i>
+                            Notice Board
+                        </a>
+                    }
+                    else if (User.IsInRole("Student"))
+                    {
+                        <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "StudentPortal" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")"
+                               asp-controller="StudentPortal" asp-action="Index">
+                            <i class="fas fa-chart-pie"></i>
+                            Dashboard
+                        </a>
+
+                        <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "StudentPortal" && ViewContext.RouteData.Values["Action"]?.ToString() == "ClassRecords" ? "active" : "")"
+                               asp-controller="StudentPortal" asp-action="ClassRecords">
+                            <i class="fas fa-video"></i>
+                            Class Records
+                        </a>
+
+                        <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "StudentPortal" && ViewContext.RouteData.Values["Action"]?.ToString() == "Tutorials" ? "active" : "")"
+                               asp-controller="StudentPortal" asp-action="Tutorials">
+                            <i class="fas fa-file-pdf"></i>
+                            Tutorials & Slides
+                        </a>
+
+                        <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "StudentPortal" && ViewContext.RouteData.Values["Action"]?.ToString() == "Assignments" ? "active" : "")"
+                               asp-controller="StudentPortal" asp-action="Assignments">
+                            <i class="fas fa-tasks"></i>
+                            Assignments
+                        </a>
+
+                        <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "StudentPortal" && ViewContext.RouteData.Values["Action"]?.ToString() == "Routines" ? "active" : "")"
+                               asp-controller="StudentPortal" asp-action="Routines">
+                            <i class="fas fa-calendar-days"></i>
+                            Routines
+                        </a>
+
+                        <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "StudentPortal" && ViewContext.RouteData.Values["Action"]?.ToString() == "Notices" ? "active" : "")"
+                               asp-controller="StudentPortal" asp-action="Notices">
+                            <i class="fas fa-bullhorn"></i>
+                            Notice Board
                         </a>
                     }
 
@@ -101,8 +194,14 @@
                             <i class="fas fa-search text-muted"></i>
                             <input type="text" placeholder="Global search..." style="border: none; outline: none; background: none; width: 150px; font-size: 0.875rem;">
                         </div>
-                        <div style="width: 48px; height: 48px; background: var(--sidebar-bg); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: var(--shadow-premium);">
-                            <i class="fas fa-user-astronaut"></i>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div style="width: 48px; height: 48px; background: var(--sidebar-bg); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: var(--shadow-premium);" title="@User.Identity.Name">
+                                <i class="fas fa-user-astronaut"></i>
+                            </div>
+                            <a class="btn btn-outline-danger d-flex align-items-center gap-2" asp-controller="Account" asp-action="Logout" style="border-radius: 12px; padding: 0.6rem 1.2rem; font-weight: 600; font-size: 0.875rem;">
+                                <i class="fas fa-power-off"></i>
+                                Logout
+                            </a>
                         </div>
                     </div>
                 </header>

@@ -52,14 +52,7 @@ namespace finalSE.Service.Application
                 <p>This link expires in 24 hours.</p>
             ";
 
-            try
-            {
-                await _emailService.SendEmailAsync(email, "Invitation Link", body);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[EMAIL ERROR] Failed to send email to {email}: {ex.Message}");
-            }
+            await _emailService.SendEmailAsync(email, "Invitation Link", body);
         }
 
         // ================= VALIDATE TOKEN =================
@@ -94,6 +87,25 @@ namespace finalSE.Service.Application
         public async Task<List<Invitation>> GetAllAsync()
         {
             return _repo.GetAll();
+        }
+
+        // ================= RESEND EMAIL =================
+        public async Task ResendInvitationEmailAsync(string token, string email)
+        {
+            var invitation = _repo.GetByToken(token);
+            if (invitation == null || invitation.IsUsed) return;
+
+            // Generate link dynamically using configured AppUrl or fallback to request context if needed
+            string link = $"{_config["AppUrl"]}/Account/RegisterWithToken?token={token}";
+
+            string body = $@"
+                <h2>You're Invited!</h2>
+                <p>Click below to join:</p>
+                <a href='{link}'>Register Here</a>
+                <p>This link expires in 24 hours.</p>
+            ";
+
+            await _emailService.SendEmailAsync(email, "Invitation Link", body);
         }
     }
 }
