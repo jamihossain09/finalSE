@@ -19,21 +19,21 @@ namespace finalSE.Service.Application
             var senderEmail = _config["EmailSettings:SenderEmail"];
             var password = _config["EmailSettings:Password"];
 
-            // Check if default placeholder credentials are used. If so, simulate sending.
+            // Always write to a mock file for easy local development testing
+            string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "mock-emails");
+            if (!Directory.Exists(folder))
+            {
+                Directory.CreateDirectory(folder);
+            }
+            
+            string filePath = Path.Combine(folder, "emails.txt");
+            string logContent = $"[EMAIL LOG - {DateTime.Now}]\nTo: {toEmail}\nSubject: {subject}\nBody: {body}\n-------------------------------------------------\n\n";
+            await System.IO.File.AppendAllTextAsync(filePath, logContent);
+
+            // Check if default placeholder credentials are used. If so, only simulate.
             if (string.IsNullOrEmpty(senderEmail) || senderEmail == "yourgmail@gmail.com" || 
                 string.IsNullOrEmpty(password) || password == "YOUR_APP_PASSWORD")
             {
-                string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "mock-emails");
-                if (!Directory.Exists(folder))
-                {
-                    Directory.CreateDirectory(folder);
-                }
-                
-                string filePath = Path.Combine(folder, "emails.txt");
-                string logContent = $"[MOCK EMAIL SENT - {DateTime.Now}]\nTo: {toEmail}\nSubject: {subject}\nBody: {body}\n-------------------------------------------------\n\n";
-                await System.IO.File.AppendAllTextAsync(filePath, logContent);
-                
-                // Set a flag to inform controllers
                 return;
             }
 

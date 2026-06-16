@@ -1,4 +1,4 @@
-﻿using finalSE.Models;
+using finalSE.Models;
 using finalSE.Service.Interface;
 using finalSE.UnitOfWork.Interface;
 using finalSE.Models;
@@ -26,54 +26,36 @@ namespace finalSE.Service.Application
             return await _uow.Department.GetByIdAsync(id);
         }
 
-        public async Task<DepartmentModel> CreateAsync(DepartmentModel department)
+        public async Task CreateAsync(DepartmentModel department)
         {
             await _uow.Department.AddAsync(department);
             await _uow.SaveChangesAsync();
-            return department;
         }
 
-        public async Task<bool> UpdateAsync(int id, DepartmentModel department)
+        public async Task UpdateAsync(int id, DepartmentModel department)
         {
             var existing = await _uow.Department.GetByIdAsync(id);
 
             if (existing == null)
-                return false;
+                return;
 
             existing.DepartmentName = department.DepartmentName;
 
             _uow.Department.Update(existing);
             await _uow.SaveChangesAsync();
-
-            return true;
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<DepartmentModel?> DeleteAsync(int id)
         {
             var department = await _uow.Department.GetByIdAsync(id);
 
             if (department == null)
-                return false;
+                return null;
 
             _uow.Department.Delete(department);
             await _uow.SaveChangesAsync();
 
-            return true;
-        }
-
-        Task IDepartmentService.CreateAsync(DepartmentModel department)
-        {
-            return CreateAsync(department);
-        }
-
-        Task IDepartmentService.UpdateAsync(int id, DepartmentModel department)
-        {
-            return UpdateAsync(id, department);
-        }
-
-        Task<DepartmentModel?> IDepartmentService.DeleteAsync(int id)
-        {
-            throw new NotImplementedException();
+            return department;
         }
     }
 }

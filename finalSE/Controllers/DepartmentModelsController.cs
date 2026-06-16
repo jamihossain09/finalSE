@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -60,7 +60,7 @@ namespace finalSE.Controllers
         {
             if (ModelState.IsValid)
             {
-                _department.CreateAsync(departmentModel);
+                await _department.CreateAsync(departmentModel);
 
                 return RedirectToAction(nameof(Index));
             }
@@ -99,7 +99,7 @@ namespace finalSE.Controllers
             {
                 try
                 {
-                    _department.UpdateAsync(departmentModel.Id, departmentModel);
+                    await _department.UpdateAsync(departmentModel.Id, departmentModel);
 
                 }
                 catch (DbUpdateConcurrencyException)
@@ -134,7 +134,7 @@ namespace finalSE.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            _department.DeleteAsync(id);
+            await _department.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
 

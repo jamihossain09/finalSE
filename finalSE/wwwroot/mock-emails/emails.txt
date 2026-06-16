@@ -86,3 +86,143 @@ Body:
             
 -------------------------------------------------
 
+[EMAIL LOG - 6/15/2026 7:27:15 PM]
+To: testuser@gmail.com
+Subject: Register Verification OTP
+Body: 
+            <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;'>
+                <h2 style='color: #4f46e5; text-align: center;'>Email Verification</h2>
+                <p>Hello,</p>
+                <p>Thank you for registering. Your verification OTP code is:</p>
+                <div style='background-color: #f8f9fa; padding: 15px; text-align: center; font-size: 28px; font-weight: bold; letter-spacing: 5px; color: #4f46e5; border-radius: 4px; margin: 20px 0;'>
+                    316299
+                </div>
+                <p>This code will expire in 10 minutes.</p>
+                <p style='color: #999; font-size: 12px; text-align: center; margin-top: 30px;'>If you did not make this request, please ignore this email.</p>
+            </div>
+-------------------------------------------------
+
+[EMAIL LOG - 6/15/2026 7:58:34 PM]
+To: student_test@example.com
+Subject: Invitation Link
+Body: 
+                <h2>You're Invited!</h2>
+                <p>Click below to join:</p>
+                <a href='https://localhost:7030/Account/RegisterWithToken?token=f7066d70-6a11-4c17-8cf0-a8ad15d87c99'>Register Here</a>
+                <p>This link expires in 24 hours.</p>
+            
+-------------------------------------------------
+
+[EMAIL LOG - 6/15/2026 8:01:47 PM]
+To: student_test@example.com
+Subject: Invitation Link
+Body: 
+                <h2>You're Invited!</h2>
+                <p>Click below to join:</p>
+                <a href='https://localhost:7030/Account/RegisterWithToken?token=f7066d70-6a11-4c17-8cf0-a8ad15d87c99'>Register Here</a>
+                <p>This link expires in 24 hours.</p>
+            
+-------------------------------------------------
+
+[EMAIL LOG - 6/15/2026 8:04:55 PM]
+To: student_test@example.com
+Subject: Invitation Verification OTP
+Body: 
+            <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;'>
+                <h2 style='color: #4f46e5; text-align: center;'>Email Verification</h2>
+                <p>Hello,</p>
+                <p>You are registering using an invitation link. Your verification OTP code is:</p>
+                <div style='background-color: #f8f9fa; padding: 15px; text-align: center; font-size: 28px; font-weight: bold; letter-spacing: 5px; color: #4f46e5; border-radius: 4px; margin: 20px 0;'>
+                    864469
+                </div>
+                <p>This code will expire in 10 minutes.</p>
+                <p style='color: #999; font-size: 12px; text-align: center; margin-top: 30px;'>If you did not make this request, please ignore this email.</p>
+            </div>
+-------------------------------------------------
+
+[EMAIL LOG - 6/15/2026 11:00:12 PM]
+To: yaariaanromen@gmail.com
+Subject: Invitation Link
+Body: 
+                <h2>You're Invited!</h2>
+                <p>Click below to join:</p>
+                <a href='https://localhost:7030/Account/RegisterWithToken?token=dd4b7820-5b3c-4de6-be89-2a9d00ad706d'>Register Here</a>
+                <p>This link expires in 24 hours.</p>
+            
+-------------------------------------------------
+
+[EMAIL LOG - 6/15/2026 11:01:22 PM]
+To: yaariaanromen@gmail.com
+Subject: Invitation Verification OTP
+Body: 
+            <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;'>
+                <h2 style='color: #4f46e5; text-align: center;'>Email Verification</h2>
+                <p>Hello,</p>
+                <p>You are registering using an invitation link. Your verification OTP code is:</p>
+                <div style='background-color: #f8f9fa; padding: 15px; text-align: center; font-size: 28px; font-weight: bold; letter-spacing: 5px; color: #4f46e5; border-radius: 4px; margin: 20px 0;'>
+                    526933
+                </div>
+                <p>This code will expire in 10 minutes.</p>
+                <p style='color: #999; font-size: 12px; text-align: center; margin-top: 30px;'>If you did not make this request, please ignore this email.</p>
+            </div>
+-------------------------------------------------
+
+[EMAIL LOG - 6/15/2026 11:04:13 PM]
+To: yaariaanromen@gmail.com
+Subject: Reset Password OTP
+Body: 
+            <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;'>
+                <h2 style='color: #dc3545; text-align: center;'>Reset Password Verification</h2>
+                <p>Hello,</p>
+                <p>You requested a password reset. Your verification OTP code is:</p>
+                <div style='background-color: #f8f9fa; padding: 15px; text-align: center; font-size: 28px; font-weight: bold; letter-spacing: 5px; color: #dc3545; border-radius: 4px; margin: 20px 0;'>
+                    540712
+                </div>
+                <p>This code will expire in 10 minutes.</p>
+                <p style='color: #999; font-size: 12px; text-align: center; margin-top: 30px;'>If you did not request this, please ignore this email.</p>
+            </div>
+-------------------------------------------------
+
+[EMAIL LOG - 6/15/2026 11:09:35 PM]
+To: romenpaul01@gmail.com
+Subject: Invitation Link
+Body: 
+                <h2>You're Invited!</h2>
+                <p>Click below to join:</p>
+                <a href='https://localhost:7030/Account/RegisterWithToken?token=86d77af5-0901-40a9-bac0-e83e4a755f13'>Register Here</a>
+                <p>This link expires in 24 hours.</p>
+            
+-------------------------------------------------
+
+[EMAIL LOG - 6/15/2026 11:11:28 PM]
+To: romenpaul01@gmail.com
+Subject: Invitation Verification OTP
+Body: 
+            <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;'>
+                <h2 style='color: #4f46e5; text-align: center;'>Email Verification</h2>
+                <p>Hello,</p>
+                <p>You are registering using an invitation link. Your verification OTP code is:</p>
+                <div style='background-color: #f8f9fa; padding: 15px; text-align: center; font-size: 28px; font-weight: bold; letter-spacing: 5px; color: #4f46e5; border-radius: 4px; margin: 20px 0;'>
+                    479982
+                </div>
+                <p>This code will expire in 10 minutes.</p>
+                <p style='color: #999; font-size: 12px; text-align: center; margin-top: 30px;'>If you did not make this request, please ignore this email.</p>
+            </div>
+-------------------------------------------------
+
+[EMAIL LOG - 6/16/2026 12:00:20 AM]
+To: sfsd@gmail.com
+Subject: Register Verification OTP
+Body: 
+            <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;'>
+                <h2 style='color: #4f46e5; text-align: center;'>Email Verification</h2>
+                <p>Hello,</p>
+                <p>Thank you for registering. Your verification OTP code is:</p>
+                <div style='background-color: #f8f9fa; padding: 15px; text-align: center; font-size: 28px; font-weight: bold; letter-spacing: 5px; color: #4f46e5; border-radius: 4px; margin: 20px 0;'>
+                    238626
+                </div>
+                <p>This code will expire in 10 minutes.</p>
+                <p style='color: #999; font-size: 12px; text-align: center; margin-top: 30px;'>If you did not make this request, please ignore this email.</p>
+            </div>
+-------------------------------------------------
+

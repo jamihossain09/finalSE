@@ -4,72 +4,137 @@
     ViewData["Title"] = "Register";
 }
 
-<h2>Register</h2>
+<div class="row justify-content-center align-items-center" style="min-height: 80vh; padding: 2rem 0;">
+    <div class="col-md-6">
+        <div class="premium-card animate-up">
+            <div class="text-center mb-4">
+                <div class="inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px; background: rgba(79, 70, 229, 0.1); border-radius: 50%; display: inline-flex;">
+                    <i class="fas fa-user-plus text-primary" style="font-size: 1.75rem;"></i>
+                </div>
+                <h3 class="fw-bold">Create Account</h3>
+                @if (ViewBag.RoleName != null)
+                {
+                    <p class="text-muted">Registering as a premium <strong>@ViewBag.RoleName</strong> member</p>
+                }
+                else
+                {
+                    <p class="text-muted">Create a standard member account</p>
+                }
+            </div>
 
-@if (ViewBag.RoleName != null)
-{
-    <h4>Registering as: <strong>@ViewBag.RoleName</strong></h4>
-    <br />
-}
-
-@if (ViewBag.Error != null)
-{
-    <div class="alert alert-danger">@ViewBag.Error</div>
-    <br />
-}
-
-<form asp-action="@(ViewBag.Token != null ? "RegisterFromInvitation" : "Register")" method="post">
-
-    @if (ViewBag.Token != null)
-    {
-        <input type="hidden" name="token" value="@ViewBag.Token" />
-    }
-
-    <input asp-for="UserName" class="form-control" placeholder="Username" required />
-    <br />
-
-    @if (ViewBag.Token != null)
-    {
-        <input asp-for="Email" class="form-control" placeholder="Email" value="@ViewBag.Email" readonly />
-    }
-    else
-    {
-        <input asp-for="Email" class="form-control" placeholder="Email" required />
-    }
-    <br />
-
-    <input asp-for="PasswordHash" type="password" class="form-control" placeholder="Password" required />
-    <br />
-
-    <input asp-for="Address" class="form-control" placeholder="Address" required />
-    <br />
-
-    @if (ViewBag.RoleName == "Student")
-    {
-        <input type="number" name="age" class="form-control" placeholder="Age" required />
-        <br />
-    }
-    else if (ViewBag.RoleName == "Teacher")
-    {
-        <input type="text" name="phone" class="form-control" placeholder="Phone Number" required />
-        <br />
-    }
-
-    @if ((ViewBag.RoleName == "Student" || ViewBag.RoleName == "Teacher") && ViewBag.Departments != null)
-    {
-        <label>Select Department</label>
-        <select name="departmentId" class="form-control" required>
-            <option value="">-- Select Department --</option>
-            @foreach (var dept in ViewBag.Departments)
+            @if (ViewBag.Error != null)
             {
-                <option value="@dept.Id">@dept.DepartmentName</option>
+                <div class="alert alert-danger" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i> @ViewBag.Error
+                </div>
             }
-        </select>
-        <br />
-    }
 
-    <button type="submit" class="btn btn-success">
-        Register
-    </button>
+            <form asp-action="@(ViewBag.Token != null ? "RegisterFromInvitation" : "Register")" method="post">
+                @if (ViewBag.Token != null)
+                {
+                    <input type="hidden" name="token" value="@ViewBag.Token" />
+                }
 
-</form>
+                <div class="form-group mb-3">
+                    <label class="form-label fw-semibold" asp-for="UserName">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0">
+                            <i class="fas fa-user text-muted"></i>
+                        </span>
+                        <input asp-for="UserName" class="form-control border-start-0" placeholder="Choose a username" required style="height: 3rem;" />
+                    </div>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="form-label fw-semibold" asp-for="Email">Email Address</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0">
+                            <i class="fas fa-envelope text-muted"></i>
+                        </span>
+                        @if (ViewBag.Token != null)
+                        {
+                            <input asp-for="Email" class="form-control border-start-0" placeholder="Email" value="@ViewBag.Email" readonly style="height: 3rem; background-color: #f1f5f9;" />
+                        }
+                        else
+                        {
+                            <input asp-for="Email" class="form-control border-start-0" placeholder="Enter your email" required style="height: 3rem;" />
+                        }
+                    </div>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="form-label fw-semibold" asp-for="PasswordHash">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0">
+                            <i class="fas fa-lock text-muted"></i>
+                        </span>
+                        <input asp-for="PasswordHash" type="password" class="form-control border-start-0" placeholder="••••••••" required style="height: 3rem;" />
+                    </div>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="form-label fw-semibold" asp-for="Address">Address</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0">
+                            <i class="fas fa-map-marker-alt text-muted"></i>
+                        </span>
+                        <input asp-for="Address" class="form-control border-start-0" placeholder="Enter your address" required style="height: 3rem;" />
+                    </div>
+                </div>
+
+                @if (ViewBag.RoleName == "Student")
+                {
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-semibold" for="age">Age</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="fas fa-birthday-cake text-muted"></i>
+                            </span>
+                            <input type="number" id="age" name="age" class="form-control border-start-0" placeholder="Student's Age" required style="height: 3rem;" />
+                        </div>
+                    </div>
+                }
+                else if (ViewBag.RoleName == "Teacher")
+                {
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-semibold" for="phone">Phone Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="fas fa-phone text-muted"></i>
+                            </span>
+                            <input type="text" id="phone" name="phone" class="form-control border-start-0" placeholder="Teacher's Phone" required style="height: 3rem;" />
+                        </div>
+                    </div>
+                }
+
+                @if ((ViewBag.RoleName == "Student" || ViewBag.RoleName == "Teacher") && ViewBag.Departments != null)
+                {
+                    <div class="form-group mb-4">
+                        <label class="form-label fw-semibold">Select Department</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="fas fa-building text-muted"></i>
+                            </span>
+                            <select name="departmentId" class="form-control border-start-0" required style="height: 3rem;">
+                                <option value="">-- Choose Department --</option>
+                                @foreach (var dept in ViewBag.Departments)
+                                {
+                                    <option value="@dept.Id">@dept.DepartmentName</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                }
+
+                <button type="submit" class="btn-primary-premium w-100 justify-content-center">
+                    Register Account <i class="fas fa-user-check ms-2"></i>
+                </button>
+            </form>
+
+            <div class="text-center mt-4">
+                <span class="text-muted">Already have an account?</span>
+                <a asp-action="Login" class="text-decoration-none fw-semibold text-primary ms-1">Login Here</a>
+            </div>
+        </div>
+    </div>
+</div>

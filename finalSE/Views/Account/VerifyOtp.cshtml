@@ -1,0 +1,44 @@
+@{
+    ViewData["Title"] = "Verify OTP";
+}
+
+<div class="row justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="col-md-5">
+        <div class="premium-card animate-up">
+            <div class="text-center mb-4">
+                <div class="inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px; background: rgba(79, 70, 229, 0.1); border-radius: 50%; display: inline-flex;">
+                    <i class="fas fa-shield-alt text-primary" style="font-size: 1.75rem;"></i>
+                </div>
+                <h3 class="fw-bold">Enter Verification Code</h3>
+                <p class="text-muted">An OTP has been sent to <strong>@ViewBag.Email</strong>. Please enter the code below to verify.</p>
+            </div>
+
+            @if (ViewBag.Error != null)
+            {
+                <div class="alert alert-danger" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i> @ViewBag.Error
+                </div>
+            }
+
+            <form asp-action="VerifyOtp" method="post">
+                <input type="hidden" name="email" value="@ViewBag.Email" />
+                <input type="hidden" name="purpose" value="@ViewBag.Purpose" />
+
+                <div class="form-group mb-4">
+                    <label class="form-label fw-semibold" for="otp">One-Time Password (OTP)</label>
+                    <input type="text" id="otp" name="otp" class="form-control text-center fs-3 fw-bold tracking-widest" placeholder="••••••" maxlength="6" required autocomplete="one-time-code" style="letter-spacing: 0.5rem; height: 3.5rem;" />
+                </div>
+
+                <button type="submit" class="btn-primary-premium w-100 justify-content-center">
+                    Verify & Continue <i class="fas fa-arrow-right ms-2"></i>
+                </button>
+            </form>
+
+            <div class="text-center mt-4">
+                <a asp-action="Login" class="text-decoration-none text-muted">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Login
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
