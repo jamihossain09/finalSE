@@ -123,6 +123,12 @@
                             Assignments
                         </a>
 
+                        <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "TeacherPanel" && ViewContext.RouteData.Values["Action"]?.ToString() == "StudentMarks" ? "active" : "")"
+                               asp-controller="TeacherPanel" asp-action="StudentMarks">
+                            <i class="fas fa-graduation-cap"></i>
+                            Student Marks
+                        </a>
+
                         <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "TeacherPanel" && ViewContext.RouteData.Values["Action"]?.ToString() == "Routines" ? "active" : "")"
                                asp-controller="TeacherPanel" asp-action="Routines">
                             <i class="fas fa-calendar-days"></i>
@@ -165,6 +171,12 @@
                                asp-controller="StudentPortal" asp-action="Routines">
                             <i class="fas fa-calendar-days"></i>
                             Routines
+                        </a>
+
+                        <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "StudentPortal" && ViewContext.RouteData.Values["Action"]?.ToString() == "MyResults" ? "active" : "")"
+                               asp-controller="StudentPortal" asp-action="MyResults">
+                            <i class="fas fa-award"></i>
+                            My Results
                         </a>
 
                         <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "StudentPortal" && ViewContext.RouteData.Values["Action"]?.ToString() == "Notices" ? "active" : "")"

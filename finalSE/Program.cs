@@ -95,6 +95,100 @@ using (var scope = app.Services.CreateScope())
             });
             context.SaveChanges();
         }
+
+        // Seed Teacher User & Profile
+        if (!context.Users.Any(u => u.UserName == "teacher"))
+        {
+            var csDept = context.Departments.First(d => d.DepartmentName == "Computer Science");
+            var teacherRole = context.Roles.First(r => r.RoleName == "Teacher");
+
+            var teacherUser = new User
+            {
+                UserName = "teacher",
+                Email = "teacher@system.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("teacher123"),
+                Address = "CS Department Office 101",
+                RoleId = teacherRole.Id,
+                CreatedAt = DateTime.Now
+            };
+            context.Users.Add(teacherUser);
+            context.SaveChanges();
+
+            var teacherProfile = new Teacher
+            {
+                Name = "Dr. John Doe",
+                Email = "teacher@system.com",
+                Phone = "01711122233",
+                Address = "CS Department Office 101",
+                DepartmentId = csDept.Id
+            };
+            context.Teachers.Add(teacherProfile);
+            context.SaveChanges();
+        }
+
+        // Seed Student Users & Profiles
+        if (!context.Users.Any(u => u.UserName == "student1"))
+        {
+            var csDept = context.Departments.First(d => d.DepartmentName == "Computer Science");
+            var studentRole = context.Roles.First(r => r.RoleName == "Student");
+
+            var studentUser1 = new User
+            {
+                UserName = "student1",
+                Email = "student1@system.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("student123"),
+                Address = "Dormitory A, Room 10",
+                RoleId = studentRole.Id,
+                CreatedAt = DateTime.Now
+            };
+            var studentUser2 = new User
+            {
+                UserName = "student2",
+                Email = "student2@system.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("student123"),
+                Address = "Dormitory A, Room 11",
+                RoleId = studentRole.Id,
+                CreatedAt = DateTime.Now
+            };
+            var studentUser3 = new User
+            {
+                UserName = "student3",
+                Email = "student3@system.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("student123"),
+                Address = "Dormitory B, Room 22",
+                RoleId = studentRole.Id,
+                CreatedAt = DateTime.Now
+            };
+            context.Users.AddRange(studentUser1, studentUser2, studentUser3);
+            context.SaveChanges();
+
+            var studentProfile1 = new StudentModel
+            {
+                Name = "Alice Smith",
+                Email = "student1@system.com",
+                Age = 20,
+                Address = "Dormitory A, Room 10",
+                DepartmentId = csDept.Id
+            };
+            var studentProfile2 = new StudentModel
+            {
+                Name = "Bob Johnson",
+                Email = "student2@system.com",
+                Age = 21,
+                Address = "Dormitory A, Room 11",
+                DepartmentId = csDept.Id
+            };
+            var studentProfile3 = new StudentModel
+            {
+                Name = "Charlie Brown",
+                Email = "student3@system.com",
+                Age = 22,
+                Address = "Dormitory B, Room 22",
+                DepartmentId = csDept.Id
+            };
+            context.Students.AddRange(studentProfile1, studentProfile2, studentProfile3);
+            context.SaveChanges();
+        }
     }
     catch (Exception ex)
     {

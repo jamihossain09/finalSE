@@ -337,5 +337,178 @@ namespace finalSE.Controllers
 
             return RedirectToAction(nameof(Assignments));
         }
+
+        // ================= STUDENT MARKS =================
+        public async Task<IActionResult> StudentMarks()
+        {
+            var teacher = await GetCurrentTeacherAsync();
+            if (teacher == null)
+            {
+                return Content("❌ Teacher profile not found. Please contact the administrator.");
+            }
+
+            // Get students in the teacher's department
+            var students = await _context.Students
+                .Include(s => s.Department)
+                .Where(s => s.DepartmentId == teacher.DepartmentId)
+                .OrderBy(s => s.Name)
+                .ToListAsync();
+
+            // Fetch current teacher's marks records
+            var marks = await _context.StudentMarks
+                .Where(sm => sm.TeacherId == teacher.Id)
+                .ToListAsync();
+
+            // Ensure every student in the teacher's department has a StudentMark row initialized
+            foreach (var student in students)
+            {
+                if (!marks.Any(m => m.StudentId == student.Id))
+                {
+                    var newMark = new StudentMark
+                    {
+                        StudentId = student.Id,
+                        TeacherId = teacher.Id,
+                        Attendance = 0,
+                        ClassTest = 0,
+                        MidTerm = 0,
+                        FinalExam = 0,
+                        Total = 0,
+                        LetterGrade = "F",
+                        GradePoint = 0.00,
+                        Remarks = "Fail",
+                        IsPublished = false,
+                        LastUpdated = DateTime.Now
+                    };
+                    _context.StudentMarks.Add(newMark);
+                    marks.Add(newMark);
+                }
+            }
+
+            if (_context.ChangeTracker.HasChanges())
+            {
+                await _context.SaveChangesAsync();
+            }
+
+            // Reload marks with student information to pass to the view
+            var finalMarks = await _context.StudentMarks
+                .Include(sm => sm.Student)
+                .Where(sm => sm.TeacherId == teacher.Id)
+                .OrderBy(sm => sm.Student.Name)
+                .ToListAsync();
+
+            ViewBag.Teacher = teacher;
+            return View(finalMarks);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateMarks(int studentId, double attendance, double classTest, double midTerm, double finalExam)
+        {
+            var teacher = await GetCurrentTeacherAsync();
+            if (teacher == null) return Json(new { success = false, message = "Teacher profile not found." });
+
+            if (attendance < 0 || attendance > 10) return Json(new { success = false, message = "Attendance marks must be between 0 and 10." });
+            if (classTest < 0 || classTest > 20) return Json(new { success = false, message = "Class Test marks must be between 0 and 20." });
+            if (midTerm < 0 || midTerm > 30) return Json(new { success = false, message = "Mid-term marks must be between 0 and 30." });
+            if (finalExam < 0 || finalExam > 40) return Json(new { success = false, message = "Final exam marks must be between 0 and 40." });
+
+            var total = attendance + classTest + midTerm + finalExam;
+            if (total < 0 || total > 100) return Json(new { success = false, message = "Total marks must be between 0 and 100." });
+
+            var mark = await _context.StudentMarks.FirstOrDefaultAsync(m => m.StudentId == studentId && m.TeacherId == teacher.Id);
+            if (mark == null) return Json(new { success = false, message = "Student mark record not found." });
+
+            mark.Attendance = attendance;
+            mark.ClassTest = classTest;
+            mark.MidTerm = midTerm;
+            mark.FinalExam = finalExam;
+            mark.Total = total;
+
+            var gradeInfo = CalculateGrade(total);
+            mark.LetterGrade = gradeInfo.LetterGrade;
+            mark.GradePoint = gradeInfo.GradePoint;
+            mark.Remarks = gradeInfo.Remarks;
+            mark.LastUpdated = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+
+            return Json(new { 
+                success = true, 
+                message = "Marks updated successfully!",
+                total = total,
+                letterGrade = gradeInfo.LetterGrade,
+                gradePoint = gradeInfo.GradePoint.ToString("0.00"),
+                remarks = gradeInfo.Remarks
+            });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PublishResult(int studentId, bool publish)
+        {
+            var teacher = await GetCurrentTeacherAsync();
+            if (teacher == null) return Json(new { success = false, message = "Teacher profile not found." });
+
+            var mark = await _context.StudentMarks.FirstOrDefaultAsync(m => m.StudentId == studentId && m.TeacherId == teacher.Id);
+            if (mark == null) return Json(new { success = false, message = "Student mark record not found." });
+
+            mark.IsPublished = publish;
+            await _context.SaveChangesAsync();
+
+            string actionText = publish ? "published" : "drafted";
+            return Json(new { success = true, message = $"Student marks set to {actionText} successfully!", isPublished = publish });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetStudentInfo(int studentId)
+        {
+            var teacher = await GetCurrentTeacherAsync();
+            if (teacher == null) return Json(new { success = false, message = "Teacher profile not found." });
+
+            var student = await _context.Students
+                .Include(s => s.Department)
+                .FirstOrDefaultAsync(s => s.Id == studentId);
+
+            if (student == null) return Json(new { success = false, message = "Student not found." });
+
+            var mark = await _context.StudentMarks.FirstOrDefaultAsync(m => m.StudentId == studentId && m.TeacherId == teacher.Id);
+
+            return Json(new {
+                success = true,
+                student = new {
+                    name = student.Name,
+                    email = student.Email,
+                    age = student.Age,
+                    address = student.Address,
+                    department = student.Department?.DepartmentName ?? "N/A"
+                },
+                marks = mark != null ? new {
+                    attendance = mark.Attendance,
+                    classTest = mark.ClassTest,
+                    midTerm = mark.MidTerm,
+                    finalExam = mark.FinalExam,
+                    total = mark.Total,
+                    letterGrade = mark.LetterGrade,
+                    gradePoint = mark.GradePoint.ToString("0.00"),
+                    remarks = mark.Remarks,
+                    isPublished = mark.IsPublished,
+                    lastUpdated = mark.LastUpdated.ToString("yyyy-MM-dd HH:mm")
+                } : null
+            });
+        }
+
+        private (string LetterGrade, double GradePoint, string Remarks) CalculateGrade(double total)
+        {
+            if (total >= 80) return ("A+", 4.00, "Excellent");
+            if (total >= 75) return ("A", 3.75, "Very Good");
+            if (total >= 70) return ("A-", 3.50, "Very Good");
+            if (total >= 65) return ("B+", 3.25, "Good");
+            if (total >= 60) return ("B", 3.00, "Good");
+            if (total >= 55) return ("B-", 2.75, "Satisfactory");
+            if (total >= 50) return ("C+", 2.50, "Satisfactory");
+            if (total >= 45) return ("C", 2.25, "Pass");
+            if (total >= 40) return ("D", 2.00, "Pass");
+            return ("F", 0.00, "Fail");
+        }
     }
 }

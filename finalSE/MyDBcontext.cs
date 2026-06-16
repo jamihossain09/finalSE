@@ -30,6 +30,8 @@ public class MyDBContext : DbContext
     public DbSet<AssignmentTask> AssignmentTasks { get; set; }
 
     public DbSet<Notice> Notices { get; set; }
+
+    public DbSet<StudentMark> StudentMarks { get; set; }
     // 🔥 THIS PART YOU NEED TO ADD
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -39,5 +41,17 @@ public class MyDBContext : DbContext
             .HasOne(u => u.Role)
             .WithMany(r => r.Users)
             .HasForeignKey(u => u.RoleId);
+
+        modelBuilder.Entity<StudentMark>()
+            .HasOne(sm => sm.Student)
+            .WithMany()
+            .HasForeignKey(sm => sm.StudentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<StudentMark>()
+            .HasOne(sm => sm.Teacher)
+            .WithMany()
+            .HasForeignKey(sm => sm.TeacherId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

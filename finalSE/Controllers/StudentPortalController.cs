@@ -131,5 +131,23 @@ namespace finalSE.Controllers
             var notices = await _context.Notices.OrderByDescending(n => n.PublishedAt).ToListAsync();
             return View(notices);
         }
+
+        // ================= MY RESULTS =================
+        public async Task<IActionResult> MyResults()
+        {
+            var student = await GetCurrentStudentAsync();
+            if (student == null)
+            {
+                return Content("❌ Student profile not found. Please contact the administrator.");
+            }
+
+            var results = await _context.StudentMarks
+                .Include(sm => sm.Teacher)
+                .Where(sm => sm.StudentId == student.Id)
+                .ToListAsync();
+
+            ViewBag.Student = student;
+            return View(results);
+        }
     }
 }
