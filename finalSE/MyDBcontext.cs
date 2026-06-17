@@ -13,6 +13,8 @@ public class MyDBContext : DbContext
 
     public DbSet<DepartmentModel> Departments { get; set; }
 
+    public DbSet<Subject> Subjects { get; set; }
+
     public DbSet<User> Users { get; set; }
 
     public DbSet<Role> Roles { get; set; }
@@ -32,7 +34,7 @@ public class MyDBContext : DbContext
     public DbSet<Notice> Notices { get; set; }
 
     public DbSet<StudentMark> StudentMarks { get; set; }
-    // 🔥 THIS PART YOU NEED TO ADD
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -53,5 +55,16 @@ public class MyDBContext : DbContext
             .WithMany()
             .HasForeignKey(sm => sm.TeacherId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<StudentMark>()
+            .HasOne(sm => sm.Subject)
+            .WithMany()
+            .HasForeignKey(sm => sm.SubjectId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Each student can only have one mark record per subject (from any teacher)
+        modelBuilder.Entity<StudentMark>()
+            .HasIndex(sm => new { sm.StudentId, sm.SubjectId })
+            .IsUnique();
     }
 }

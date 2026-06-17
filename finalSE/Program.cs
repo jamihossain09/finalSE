@@ -56,6 +56,14 @@ using (var scope = app.Services.CreateScope())
         var context = services.GetRequiredService<MyDBContext>();
         context.Database.Migrate();
 
+        // Clean up orphan StudentMark rows from before subject system was added (SubjectId = 0)
+        var orphanMarks = context.StudentMarks.Where(m => m.SubjectId == 0).ToList();
+        if (orphanMarks.Any())
+        {
+            context.StudentMarks.RemoveRange(orphanMarks);
+            context.SaveChanges();
+        }
+
         // Seed Roles
         if (!context.Roles.Any())
         {
@@ -76,6 +84,52 @@ using (var scope = app.Services.CreateScope())
                 new DepartmentModel { DepartmentName = "Electrical Engineering" },
                 new DepartmentModel { DepartmentName = "Physics" },
                 new DepartmentModel { DepartmentName = "Mathematics" }
+            );
+            context.SaveChanges();
+        }
+
+        // Seed Subjects (minimum 6 per department)
+        if (!context.Subjects.Any())
+        {
+            var csDept  = context.Departments.First(d => d.DepartmentName == "Computer Science");
+            var eeDept  = context.Departments.First(d => d.DepartmentName == "Electrical Engineering");
+            var phyDept = context.Departments.First(d => d.DepartmentName == "Physics");
+            var mathDept= context.Departments.First(d => d.DepartmentName == "Mathematics");
+
+            context.Subjects.AddRange(
+                // Computer Science
+                new Subject { SubjectName = "Data Structures & Algorithms", SubjectCode = "CSE101", DepartmentId = csDept.Id },
+                new Subject { SubjectName = "Object Oriented Programming",  SubjectCode = "CSE102", DepartmentId = csDept.Id },
+                new Subject { SubjectName = "Database Management Systems",  SubjectCode = "CSE201", DepartmentId = csDept.Id },
+                new Subject { SubjectName = "Operating Systems",            SubjectCode = "CSE202", DepartmentId = csDept.Id },
+                new Subject { SubjectName = "Computer Networks",            SubjectCode = "CSE301", DepartmentId = csDept.Id },
+                new Subject { SubjectName = "Software Engineering",         SubjectCode = "CSE302", DepartmentId = csDept.Id },
+                new Subject { SubjectName = "Artificial Intelligence",      SubjectCode = "CSE401", DepartmentId = csDept.Id },
+
+                // Electrical Engineering
+                new Subject { SubjectName = "Circuit Analysis",             SubjectCode = "EEE101", DepartmentId = eeDept.Id },
+                new Subject { SubjectName = "Digital Electronics",          SubjectCode = "EEE102", DepartmentId = eeDept.Id },
+                new Subject { SubjectName = "Signals & Systems",            SubjectCode = "EEE201", DepartmentId = eeDept.Id },
+                new Subject { SubjectName = "Electromagnetic Theory",       SubjectCode = "EEE202", DepartmentId = eeDept.Id },
+                new Subject { SubjectName = "Power Systems",                SubjectCode = "EEE301", DepartmentId = eeDept.Id },
+                new Subject { SubjectName = "Control Systems",              SubjectCode = "EEE302", DepartmentId = eeDept.Id },
+                new Subject { SubjectName = "Microprocessors",              SubjectCode = "EEE401", DepartmentId = eeDept.Id },
+
+                // Physics
+                new Subject { SubjectName = "Classical Mechanics",          SubjectCode = "PHY101", DepartmentId = phyDept.Id },
+                new Subject { SubjectName = "Thermodynamics",               SubjectCode = "PHY102", DepartmentId = phyDept.Id },
+                new Subject { SubjectName = "Electromagnetism",             SubjectCode = "PHY201", DepartmentId = phyDept.Id },
+                new Subject { SubjectName = "Quantum Mechanics",            SubjectCode = "PHY202", DepartmentId = phyDept.Id },
+                new Subject { SubjectName = "Optics",                       SubjectCode = "PHY301", DepartmentId = phyDept.Id },
+                new Subject { SubjectName = "Nuclear Physics",              SubjectCode = "PHY302", DepartmentId = phyDept.Id },
+
+                // Mathematics
+                new Subject { SubjectName = "Calculus",                     SubjectCode = "MAT101", DepartmentId = mathDept.Id },
+                new Subject { SubjectName = "Linear Algebra",               SubjectCode = "MAT102", DepartmentId = mathDept.Id },
+                new Subject { SubjectName = "Differential Equations",       SubjectCode = "MAT201", DepartmentId = mathDept.Id },
+                new Subject { SubjectName = "Discrete Mathematics",         SubjectCode = "MAT202", DepartmentId = mathDept.Id },
+                new Subject { SubjectName = "Numerical Methods",            SubjectCode = "MAT301", DepartmentId = mathDept.Id },
+                new Subject { SubjectName = "Probability & Statistics",     SubjectCode = "MAT302", DepartmentId = mathDept.Id }
             );
             context.SaveChanges();
         }

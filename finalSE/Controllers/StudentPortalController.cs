@@ -143,7 +143,9 @@ namespace finalSE.Controllers
 
             var results = await _context.StudentMarks
                 .Include(sm => sm.Teacher)
-                .Where(sm => sm.StudentId == student.Id)
+                .Include(sm => sm.Subject)
+                .Where(sm => sm.StudentId == student.Id && sm.IsPublished)
+                .OrderBy(sm => sm.Subject.SubjectCode)
                 .ToListAsync();
 
             ViewBag.Student = student;

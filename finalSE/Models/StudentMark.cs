@@ -21,6 +21,12 @@ namespace finalSE.Models
         [ForeignKey("TeacherId")]
         public virtual Teacher Teacher { get; set; }
 
+        [Required]
+        public int SubjectId { get; set; }
+
+        [ForeignKey("SubjectId")]
+        public virtual Subject Subject { get; set; }
+
         [Range(0, 10, ErrorMessage = "Attendance marks must be between 0 and 10.")]
         public double Attendance { get; set; } = 0;
 
