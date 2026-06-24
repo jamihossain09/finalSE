@@ -1,6 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using finalSE.Models;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using System.IO;
+using System;
 
 public class RoutineController : Controller
 {
@@ -13,18 +18,57 @@ public class RoutineController : Controller
         _environment = environment;
     }
 
-    // ALL USERS CAN SEE
+    // ALL USERS CAN SEE - FILTERED BY DEPT
     [Authorize]
     public async Task<IActionResult> Index()
     {
-        var routines = await _context.Routines.ToListAsync();
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!string.IsNullOrEmpty(userIdString) && int.TryParse(userIdString, out int userId))
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user != null)
+            {
+                if (User.IsInRole("Student"))
+                {
+                    var student = await _context.Students.FirstOrDefaultAsync(s => s.Email == user.Email);
+                    if (student != null)
+                    {
+                        var studentRoutines = await _context.Routines
+                            .Include(r => r.Department)
+                            .Where(r => r.DepartmentId == null || r.DepartmentId == student.DepartmentId)
+                            .OrderByDescending(r => r.UploadedAt)
+                            .ToListAsync();
+                        return View(studentRoutines);
+                    }
+                }
+                else if (User.IsInRole("Teacher"))
+                {
+                    var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.Email == user.Email);
+                    if (teacher != null)
+                    {
+                        var teacherRoutines = await _context.Routines
+                            .Include(r => r.Department)
+                            .Where(r => r.DepartmentId == null || r.DepartmentId == teacher.DepartmentId)
+                            .OrderByDescending(r => r.UploadedAt)
+                            .ToListAsync();
+                        return View(teacherRoutines);
+                    }
+                }
+            }
+        }
+
+        var routines = await _context.Routines
+            .Include(r => r.Department)
+            .OrderByDescending(r => r.UploadedAt)
+            .ToListAsync();
         return View(routines);
     }
 
     // ONLY ADMIN CREATE
     [Authorize(Roles = "Admin")]
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
+        ViewBag.Departments = await _context.Departments.OrderBy(d => d.DepartmentName).ToListAsync();
         return View();
     }
 
@@ -32,7 +76,11 @@ public class RoutineController : Controller
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create(Routine routine, IFormFile file)
     {
-        if (file == null) return View(routine);
+        if (file == null)
+        {
+            ViewBag.Departments = await _context.Departments.OrderBy(d => d.DepartmentName).ToListAsync();
+            return View(routine);
+        }
 
         string folderPath = Path.Combine(_environment.WebRootPath, "uploads/routines");
 
@@ -50,10 +98,15 @@ public class RoutineController : Controller
         routine.FilePath = "/uploads/routines/" + fileName;
         routine.UploadedAt = DateTime.Now;
 
-        _context.Routines.Add(routine);
-        await _context.SaveChangesAsync();
+        if (ModelState.IsValid)
+        {
+            _context.Routines.Add(routine);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Index");
+        }
 
-        return RedirectToAction("Index");
+        ViewBag.Departments = await _context.Departments.OrderBy(d => d.DepartmentName).ToListAsync();
+        return View(routine);
     }
 
     // ONLY ADMIN DELETE

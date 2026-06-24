@@ -340,3 +340,25 @@ Body:
             </div>
 -------------------------------------------------
 
+[EMAIL LOG - 6/17/2026 11:05:57 PM]
+To: jami28273@gmail.com
+Subject: Invitation Link
+Body: 
+                <h2>You're Invited!</h2>
+                <p>Click below to join:</p>
+                <a href='https://localhost:7030/Account/RegisterWithToken?token=58593aa0-f82b-495b-9e61-f3e876a47ed1'>Register Here</a>
+                <p>This link expires in 24 hours.</p>
+            
+-------------------------------------------------
+
+[EMAIL LOG - 6/17/2026 11:11:10 PM]
+To: jamihossain09@gmail.com
+Subject: Invitation Link
+Body: 
+                <h2>You're Invited!</h2>
+                <p>Click below to join:</p>
+                <a href='https://localhost:7030/Account/RegisterWithToken?token=310c0958-511e-4e2b-9b65-194dee0b4e0d'>Register Here</a>
+                <p>This link expires in 24 hours.</p>
+            
+-------------------------------------------------
+

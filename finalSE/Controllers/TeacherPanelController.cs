@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using ExcelDataReader;
 
 namespace finalSE.Controllers
 {
@@ -62,7 +63,14 @@ namespace finalSE.Controllers
         // ================= ROUTINES =================
         public async Task<IActionResult> Routines()
         {
-            var routines = await _context.Routines.OrderByDescending(r => r.UploadedAt).ToListAsync();
+            var teacher = await GetCurrentTeacherAsync();
+            if (teacher == null) return NotFound();
+
+            var routines = await _context.Routines
+                .Where(r => r.DepartmentId == null || r.DepartmentId == teacher.DepartmentId)
+                .OrderByDescending(r => r.UploadedAt)
+                .ToListAsync();
+
             return View(routines);
         }
 
@@ -435,6 +443,13 @@ namespace finalSE.Controllers
             var subject = await _context.Subjects.FirstOrDefaultAsync(s => s.Id == subjectId && s.DepartmentId == teacher.DepartmentId);
             if (subject == null) return Json(new { success = false, message = "Subject not found or not in your department." });
 
+            // Verify student belongs to teacher's department
+            var student = await _context.Students.FindAsync(studentId);
+            if (student == null || student.DepartmentId != teacher.DepartmentId)
+            {
+                return Json(new { success = false, message = "Student not found or not in your department." });
+            }
+
             if (attendance < 0 || attendance > 10)  return Json(new { success = false, message = "Attendance marks must be between 0 and 10." });
             if (classTest  < 0 || classTest  > 20)  return Json(new { success = false, message = "Class Test marks must be between 0 and 20." });
             if (midTerm    < 0 || midTerm    > 30)  return Json(new { success = false, message = "Mid-term marks must be between 0 and 30." });
@@ -479,8 +494,10 @@ namespace finalSE.Controllers
             if (teacher == null) return Json(new { success = false, message = "Teacher profile not found." });
 
             var mark = await _context.StudentMarks
+                .Include(m => m.Student)
                 .FirstOrDefaultAsync(m => m.StudentId == studentId && m.SubjectId == subjectId);
-            if (mark == null) return Json(new { success = false, message = "Student mark record not found." });
+            if (mark == null || mark.Student.DepartmentId != teacher.DepartmentId)
+                return Json(new { success = false, message = "Student mark record not found or not authorized." });
 
             mark.IsPublished = publish;
             await _context.SaveChangesAsync();
@@ -499,7 +516,8 @@ namespace finalSE.Controllers
                 .Include(s => s.Department)
                 .FirstOrDefaultAsync(s => s.Id == studentId);
 
-            if (student == null) return Json(new { success = false, message = "Student not found." });
+            if (student == null || student.DepartmentId != teacher.DepartmentId)
+                return Json(new { success = false, message = "Student not found or not authorized." });
 
             var mark = await _context.StudentMarks
                 .Include(m => m.Subject)
@@ -527,6 +545,229 @@ namespace finalSE.Controllers
                     lastUpdated = mark.LastUpdated.ToString("yyyy-MM-dd HH:mm")
                 } : null
             });
+        }
+
+        // ================= BULK EXCEL/CSV MARKS MANAGEMENT =================
+        [HttpGet]
+        public async Task<IActionResult> DownloadMarksTemplate(int subjectId)
+        {
+            var teacher = await GetCurrentTeacherAsync();
+            if (teacher == null) return NotFound("Teacher profile not found.");
+
+            var subject = await _context.Subjects.FirstOrDefaultAsync(s => s.Id == subjectId && s.DepartmentId == teacher.DepartmentId);
+            if (subject == null) return NotFound("Subject not found or not in your department.");
+
+            var students = await _context.Students
+                .Where(s => s.DepartmentId == teacher.DepartmentId)
+                .OrderBy(s => s.Name)
+                .ToListAsync();
+
+            var marks = await _context.StudentMarks
+                .Where(sm => sm.SubjectId == subjectId)
+                .ToListAsync();
+
+            var csvBuilder = new System.Text.StringBuilder();
+            csvBuilder.AppendLine("StudentId,Email,StudentName,Attendance_Max10,ClassTest_Max20,MidTerm_Max30,FinalExam_Max40");
+
+            foreach (var student in students)
+            {
+                var mark = marks.FirstOrDefault(m => m.StudentId == student.Id);
+                double att = mark?.Attendance ?? 0;
+                double ct = mark?.ClassTest ?? 0;
+                double mid = mark?.MidTerm ?? 0;
+                double fin = mark?.FinalExam ?? 0;
+
+                string name = student.Name.Contains(",") ? $"\"{student.Name}\"" : student.Name;
+                csvBuilder.AppendLine($"{student.Id},{student.Email},{name},{att},{ct},{mid},{fin}");
+            }
+
+            return File(System.Text.Encoding.UTF8.GetBytes(csvBuilder.ToString()), "text/csv", $"MarksTemplate_{subject.SubjectCode}.csv");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadMarksExcel(int subjectId, IFormFile file)
+        {
+            var teacher = await GetCurrentTeacherAsync();
+            if (teacher == null) return NotFound("Teacher profile not found.");
+
+            var subject = await _context.Subjects.FirstOrDefaultAsync(s => s.Id == subjectId && s.DepartmentId == teacher.DepartmentId);
+            if (subject == null) return NotFound("Subject not found.");
+
+            if (file == null || file.Length == 0)
+            {
+                TempData["ErrorMessage"] = "Please select a valid file to upload.";
+                return RedirectToAction(nameof(StudentMarks), new { subjectId });
+            }
+
+            string extension = Path.GetExtension(file.FileName).ToLower();
+            if (extension != ".csv" && extension != ".xlsx" && extension != ".xls")
+            {
+                TempData["ErrorMessage"] = "Only CSV and Excel files (.xlsx, .xls) are supported.";
+                return RedirectToAction(nameof(StudentMarks), new { subjectId });
+            }
+
+            int successCount = 0;
+            int errorCount = 0;
+            var errorList = new List<string>();
+
+            try
+            {
+                if (extension == ".csv")
+                {
+                    using (var reader = new StreamReader(file.OpenReadStream()))
+                    {
+                        string? headerLine = await reader.ReadLineAsync(); // Skip header
+                        while (!reader.EndOfStream)
+                        {
+                            string? line = await reader.ReadLineAsync();
+                            if (string.IsNullOrWhiteSpace(line)) continue;
+
+                            var parts = ParseCsvLine(line);
+                            if (parts.Count < 7) continue;
+
+                            if (!int.TryParse(parts[0], out int studentId)) continue;
+                            string email = parts[1];
+                            
+                            double.TryParse(parts[3], out double attendance);
+                            double.TryParse(parts[4], out double classTest);
+                            double.TryParse(parts[5], out double midTerm);
+                            double.TryParse(parts[6], out double finalExam);
+
+                            var result = await ProcessStudentMarkAsync(studentId, email, subjectId, teacher.Id, teacher.DepartmentId, attendance, classTest, midTerm, finalExam);
+                            if (result.Success) successCount++;
+                            else
+                            {
+                                errorCount++;
+                                errorList.Add(result.Error);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+                    using (var stream = file.OpenReadStream())
+                    {
+                        using (var reader = ExcelReaderFactory.CreateReader(stream))
+                        {
+                            var resultDs = reader.AsDataSet(new ExcelDataSetConfiguration()
+                            {
+                                ConfigureDataTable = (_) => new ExcelDataTableConfiguration() { UseHeaderRow = true }
+                            });
+                            var table = resultDs.Tables[0];
+                            foreach (System.Data.DataRow row in table.Rows)
+                            {
+                                if (row.ItemArray.Length < 7) continue;
+
+                                string sIdStr = row[0]?.ToString() ?? "";
+                                if (!int.TryParse(sIdStr, out int studentId)) continue;
+                                string email = row[1]?.ToString() ?? "";
+
+                                double.TryParse(row[3]?.ToString() ?? "0", out double attendance);
+                                double.TryParse(row[4]?.ToString() ?? "0", out double classTest);
+                                double.TryParse(row[5]?.ToString() ?? "0", out double midTerm);
+                                double.TryParse(row[6]?.ToString() ?? "0", out double finalExam);
+
+                                var result = await ProcessStudentMarkAsync(studentId, email, subjectId, teacher.Id, teacher.DepartmentId, attendance, classTest, midTerm, finalExam);
+                                if (result.Success) successCount++;
+                                else
+                                {
+                                    errorCount++;
+                                    errorList.Add(result.Error);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error parsing file: {ex.Message}";
+                return RedirectToAction(nameof(StudentMarks), new { subjectId });
+            }
+
+            if (errorCount > 0)
+            {
+                TempData["ErrorMessage"] = $"Successfully updated & published {successCount} student marks. Failed on {errorCount} rows. Errors: {string.Join("; ", errorList.Take(5))}";
+            }
+            else
+            {
+                TempData["SuccessMessage"] = $"All {successCount} student marks successfully uploaded and automatically published!";
+            }
+
+            return RedirectToAction(nameof(StudentMarks), new { subjectId });
+        }
+
+        private List<string> ParseCsvLine(string line)
+        {
+            var result = new List<string>();
+            bool inQuotes = false;
+            var currentToken = new System.Text.StringBuilder();
+
+            for (int i = 0; i < line.Length; i++)
+            {
+                char c = line[i];
+                if (c == '"')
+                {
+                    inQuotes = !inQuotes;
+                }
+                else if (c == ',' && !inQuotes)
+                {
+                    result.Add(currentToken.ToString().Trim());
+                    currentToken.Clear();
+                }
+                else
+                {
+                    currentToken.Append(c);
+                }
+            }
+            result.Add(currentToken.ToString().Trim());
+            return result;
+        }
+
+        private async Task<(bool Success, string Error)> ProcessStudentMarkAsync(int studentId, string email, int subjectId, int teacherId, int teacherDeptId, double attendance, double classTest, double midTerm, double finalExam)
+        {
+            var student = await _context.Students.FindAsync(studentId);
+            if (student == null || student.Email.Trim().ToLower() != email.Trim().ToLower())
+                return (false, $"Student with ID {studentId} and Email '{email}' not found.");
+
+            if (student.DepartmentId != teacherDeptId)
+                return (false, $"Student {student.Name} does not belong to your department.");
+
+            if (attendance < 0 || attendance > 10) return (false, $"Attendance marks for {student.Name} must be between 0 and 10.");
+            if (classTest < 0 || classTest > 20) return (false, $"Class Test marks for {student.Name} must be between 0 and 20.");
+            if (midTerm < 0 || midTerm > 30) return (false, $"Mid-term marks for {student.Name} must be between 0 and 30.");
+            if (finalExam < 0 || finalExam > 40) return (false, $"Final exam marks for {student.Name} must be between 0 and 40.");
+
+            var total = attendance + classTest + midTerm + finalExam;
+            var gradeInfo = CalculateGrade(total);
+
+            var mark = await _context.StudentMarks.FirstOrDefaultAsync(m => m.StudentId == studentId && m.SubjectId == subjectId);
+            if (mark == null)
+            {
+                mark = new StudentMark
+                {
+                    StudentId = studentId,
+                    SubjectId = subjectId,
+                };
+                _context.StudentMarks.Add(mark);
+            }
+
+            mark.TeacherId = teacherId;
+            mark.Attendance = attendance;
+            mark.ClassTest = classTest;
+            mark.MidTerm = midTerm;
+            mark.FinalExam = finalExam;
+            mark.Total = total;
+            mark.LetterGrade = gradeInfo.LetterGrade;
+            mark.GradePoint = gradeInfo.GradePoint;
+            mark.Remarks = gradeInfo.Remarks;
+            mark.IsPublished = true; // Automatically publish results
+            mark.LastUpdated = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+            return (true, "");
         }
 
         private (string LetterGrade, double GradePoint, string Remarks) CalculateGrade(double total)

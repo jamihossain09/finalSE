@@ -144,11 +144,19 @@
 
         <!-- Marks Entry Grid -->
         <div class="card border-0 shadow-sm" style="border-radius: 20px;">
-            <div class="card-header bg-transparent border-0 pt-4 px-4 pb-2">
+            <div class="card-header bg-transparent border-0 pt-4 px-4 pb-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <h5 class="fw-bold m-0">
                     <i class="fas fa-edit text-success me-2"></i>
                     Marks Entry — <span class="text-primary">@selectedSubject.SubjectCode</span> @selectedSubject.SubjectName
                 </h5>
+                <div class="d-flex gap-2">
+                    <a href="@Url.Action("DownloadMarksTemplate", "TeacherPanel", new { subjectId = selectedSubject.Id })" class="btn btn-sm btn-outline-primary px-3" style="border-radius: 8px;">
+                        <i class="fas fa-download me-1"></i> Download Template
+                    </a>
+                    <button type="button" class="btn btn-sm btn-success px-3" data-bs-toggle="modal" data-bs-target="#bulkUploadModal" style="border-radius: 8px;">
+                        <i class="fas fa-file-excel me-1"></i> Bulk Upload (Excel/CSV)
+                    </button>
+                </div>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -357,7 +365,53 @@
             </div>
         </div>
     </div>
-</div>
+@if (selectedSubject != null)
+{
+    <!-- Bulk Upload Modal -->
+    <div class="modal fade" id="bulkUploadModal" tabindex="-1" aria-labelledby="bulkUploadModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <form asp-controller="TeacherPanel" asp-action="UploadMarksExcel" asp-route-subjectId="@selectedSubject.Id" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <div class="modal-header text-white p-4" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-top-left-radius: 20px; border-top-right-radius: 20px;">
+                        <h5 class="modal-title fw-bold" id="bulkUploadModalLabel">
+                            <i class="fas fa-file-excel me-2"></i> Bulk Marks Upload
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <p class="text-muted small">
+                            Import results in bulk for <strong>@selectedSubject.SubjectCode - @selectedSubject.SubjectName</strong>.
+                        </p>
+                        
+                        <div class="alert alert-info border-0 rounded-3 mb-4" style="font-size: 0.85rem;">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Instructions:</strong>
+                            <ol class="ps-3 mb-0 mt-1">
+                                <li>Click <strong>Download Template</strong> to get the list of students in your department.</li>
+                                <li>Open the CSV template in Excel, enter numerical marks under the score columns, and save the file.</li>
+                                <li>Upload the updated CSV or Excel (.xlsx) file below.</li>
+                                <li class="text-danger">Uploaded results will be verified and published automatically!</li>
+                            </ol>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Select Spreadsheet File</label>
+                            <input type="file" name="file" class="form-control" accept=".csv, .xlsx, .xls" required />
+                            <div class="form-text">Supports CSV, XLSX, and XLS formats.</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 bg-light p-3" style="border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;">
+                        <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal" style="border-radius: 10px;">Cancel</button>
+                        <button type="submit" class="btn btn-success px-4" style="border-radius: 10px;">
+                            <i class="fas fa-cloud-upload-alt me-1"></i> Upload &amp; Publish
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
 
 @Html.AntiForgeryToken()
 

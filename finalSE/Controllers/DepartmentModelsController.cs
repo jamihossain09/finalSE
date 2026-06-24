@@ -10,9 +10,11 @@ using finalSE;
 using finalSE.Models;
 using finalSE.Service.Application;
 using finalSE.Service.Interface;
+using Microsoft.AspNetCore.Authorization;
 
 namespace finalSE.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class DepartmentModelsController : Controller
     {
         private readonly IDepartmentService _department;
