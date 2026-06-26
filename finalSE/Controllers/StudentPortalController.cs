@@ -48,13 +48,14 @@ namespace finalSE.Controllers
             }
 
             ViewBag.Student = student;
-            ViewBag.ClassRecordsCount = await _context.ClassRecords.CountAsync();
-            ViewBag.TutorialsCount = await _context.Tutorials.CountAsync();
-            ViewBag.AssignmentsCount = await _context.AssignmentTasks.Where(a => a.DueDate >= DateTime.Now).CountAsync();
-            ViewBag.NoticesCount = await _context.Notices.CountAsync();
+            ViewBag.ClassRecordsCount = await _context.ClassRecords.CountAsync(c => c.Teacher.DepartmentId == student.DepartmentId);
+            ViewBag.TutorialsCount = await _context.Tutorials.CountAsync(t => t.Teacher.DepartmentId == student.DepartmentId);
+            ViewBag.AssignmentsCount = await _context.AssignmentTasks.Where(a => a.Teacher.DepartmentId == student.DepartmentId && a.DueDate >= DateTime.Now).CountAsync();
+            ViewBag.NoticesCount = await _context.Notices.CountAsync(n => n.DepartmentId == student.DepartmentId || n.DepartmentId == null);
 
             // Get recent notices
             var recentNotices = await _context.Notices
+                .Where(n => n.DepartmentId == student.DepartmentId || n.DepartmentId == null)
                 .OrderByDescending(n => n.PublishedAt)
                 .Take(3)
                 .ToListAsync();
@@ -71,6 +72,7 @@ namespace finalSE.Controllers
 
             var query = _context.ClassRecords
                 .Include(r => r.Teacher)
+                .Where(r => r.Teacher.DepartmentId == student.DepartmentId)
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
@@ -91,6 +93,7 @@ namespace finalSE.Controllers
 
             var query = _context.Tutorials
                 .Include(t => t.Teacher)
+                .Where(t => t.Teacher.DepartmentId == student.DepartmentId)
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
@@ -112,6 +115,7 @@ namespace finalSE.Controllers
             // Show active and past assignments
             var assignments = await _context.AssignmentTasks
                 .Include(a => a.Teacher)
+                .Where(a => a.Teacher.DepartmentId == student.DepartmentId)
                 .OrderByDescending(a => a.DueDate)
                 .ToListAsync();
 
@@ -121,14 +125,26 @@ namespace finalSE.Controllers
         // ================= ROUTINES =================
         public async Task<IActionResult> Routines()
         {
-            var routines = await _context.Routines.OrderByDescending(r => r.UploadedAt).ToListAsync();
+            var student = await GetCurrentStudentAsync();
+            if (student == null) return NotFound();
+
+            var routines = await _context.Routines
+                .Where(r => r.DepartmentId == student.DepartmentId || r.DepartmentId == null)
+                .OrderByDescending(r => r.UploadedAt)
+                .ToListAsync();
             return View(routines);
         }
 
         // ================= NOTICES =================
         public async Task<IActionResult> Notices()
         {
-            var notices = await _context.Notices.OrderByDescending(n => n.PublishedAt).ToListAsync();
+            var student = await GetCurrentStudentAsync();
+            if (student == null) return NotFound();
+
+            var notices = await _context.Notices
+                .Where(n => n.DepartmentId == student.DepartmentId || n.DepartmentId == null)
+                .OrderByDescending(n => n.PublishedAt)
+                .ToListAsync();
             return View(notices);
         }
 

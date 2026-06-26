@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,16 +23,21 @@ public class RoutineController : Controller
 
     // ONLY ADMIN CREATE
     [Authorize(Roles = "Admin")]
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
+        ViewBag.Departments = await _context.Departments.ToListAsync();
         return View();
     }
 
     [HttpPost]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Create(Routine routine, IFormFile file)
+    public async Task<IActionResult> Create(Routine routine, IFormFile file, int? departmentId)
     {
-        if (file == null) return View(routine);
+        if (file == null)
+        {
+            ViewBag.Departments = await _context.Departments.ToListAsync();
+            return View(routine);
+        }
 
         string folderPath = Path.Combine(_environment.WebRootPath, "uploads/routines");
 
@@ -49,6 +54,7 @@ public class RoutineController : Controller
 
         routine.FilePath = "/uploads/routines/" + fileName;
         routine.UploadedAt = DateTime.Now;
+        routine.DepartmentId = departmentId;
 
         _context.Routines.Add(routine);
         await _context.SaveChangesAsync();

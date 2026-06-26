@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.IO;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace finalSE.Controllers
@@ -21,17 +23,48 @@ namespace finalSE.Controllers
             _environment = environment;
         }
 
-        // ================= INDEX (ALL USERS) =================
+        // ================= INDEX (ROLE-FILTERED) =================
         public async Task<IActionResult> Index()
         {
+            // Admins see all notices
+            if (User.IsInRole("Admin"))
+            {
+                var allNotices = await _context.Notices.OrderByDescending(n => n.PublishedAt).ToListAsync();
+                return View(allNotices);
+            }
+
+            // Teachers: filter by their department
+            if (User.IsInRole("Teacher"))
+            {
+                var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (int.TryParse(userIdStr, out int userId))
+                {
+                    var user = await _context.Users.FindAsync(userId);
+                    if (user != null)
+                    {
+                        var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.Email == user.Email);
+                        if (teacher != null)
+                        {
+                            var teacherNotices = await _context.Notices
+                                .Where(n => n.DepartmentId == teacher.DepartmentId || n.DepartmentId == null)
+                                .OrderByDescending(n => n.PublishedAt)
+                                .ToListAsync();
+                            return View(teacherNotices);
+                        }
+                    }
+                }
+            }
+
+            // Fallback: show all (admin fallback)
             var notices = await _context.Notices.OrderByDescending(n => n.PublishedAt).ToListAsync();
             return View(notices);
         }
 
         // ================= CREATE (GET - ADMIN ONLY) =================
         [Authorize(Roles = "Admin")]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            ViewBag.Departments = await _context.Departments.ToListAsync();
             return View();
         }
 
@@ -39,17 +72,19 @@ namespace finalSE.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create(Notice notice, IFormFile pdfFile)
+        public async Task<IActionResult> Create(Notice notice, IFormFile pdfFile, int? departmentId)
         {
             if (pdfFile == null || pdfFile.Length == 0)
             {
                 ModelState.AddModelError("FilePath", "Please upload a PDF notice file.");
+                ViewBag.Departments = await _context.Departments.ToListAsync();
                 return View(notice);
             }
 
             if (Path.GetExtension(pdfFile.FileName).ToLower() != ".pdf")
             {
                 ModelState.AddModelError("FilePath", "Only PDF files are allowed.");
+                ViewBag.Departments = await _context.Departments.ToListAsync();
                 return View(notice);
             }
 
@@ -71,6 +106,7 @@ namespace finalSE.Controllers
 
             notice.FilePath = "/uploads/notices/" + uniqueFileName;
             notice.PublishedAt = DateTime.Now;
+            notice.DepartmentId = departmentId;
 
             if (ModelState.IsValid)
             {
@@ -80,6 +116,7 @@ namespace finalSE.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            ViewBag.Departments = await _context.Departments.ToListAsync();
             return View(notice);
         }
 
