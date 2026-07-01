@@ -167,7 +167,6 @@ namespace finalSE.Controllers
             ViewBag.Email = invitation.Email;
             ViewBag.RoleId = invitation.RoleId;
             ViewBag.RoleName = role?.RoleName;
-            ViewBag.DepartmentId = invitation.DepartmentId;
 
             var departments = await _departmentService.GetAllAsync();
             ViewBag.Departments = departments;
@@ -201,7 +200,6 @@ namespace finalSE.Controllers
                 ViewBag.Email = invitation.Email;
                 ViewBag.RoleId = invitation.RoleId;
                 ViewBag.RoleName = role?.RoleName;
-                ViewBag.DepartmentId = invitation.DepartmentId;
                 ViewBag.Departments = await _departmentService.GetAllAsync();
                 return View("Register", user);
             }
@@ -213,7 +211,7 @@ namespace finalSE.Controllers
                 User = user,
                 Otp = otp,
                 Token = token,
-                DepartmentId = invitation.DepartmentId ?? departmentId,
+                DepartmentId = departmentId,
                 Age = age,
                 Phone = phone,
                 ExpiryTime = DateTime.Now.AddMinutes(10)

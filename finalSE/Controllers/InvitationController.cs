@@ -10,16 +10,13 @@ namespace finalSE.Controllers
     {
         private readonly IInvitationService _invitationService;
         private readonly IRoleService _roleService;
-        private readonly IDepartmentService _departmentService;
 
         public InvitationController(
             IInvitationService invitationService,
-            IRoleService roleService,
-            IDepartmentService departmentService)
+            IRoleService roleService)
         {
             _invitationService = invitationService;
             _roleService = roleService;
-            _departmentService = departmentService;
         }
 
         // ================= LIST =================
@@ -31,18 +28,12 @@ namespace finalSE.Controllers
 
         // ================= CREATE (GET) =================
         [HttpGet]
-        public async Task<IActionResult> Create()
+        public IActionResult Create()
         {
             ViewBag.Roles = new SelectList(
                 _roleService.GetAll(),
                 "Id",
                 "RoleName"
-            );
-
-            ViewBag.Departments = new SelectList(
-                await _departmentService.GetAllAsync(),
-                "Id",
-                "DepartmentName"
             );
 
             return View();
@@ -51,7 +42,7 @@ namespace finalSE.Controllers
         // ================= CREATE (POST) =================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(string email, int roleId, int? departmentId)
+        public async Task<IActionResult> Create(string email, int roleId)
         {
             if (string.IsNullOrWhiteSpace(email) || roleId <= 0)
             {
@@ -63,18 +54,12 @@ namespace finalSE.Controllers
                     "RoleName"
                 );
 
-                ViewBag.Departments = new SelectList(
-                    await _departmentService.GetAllAsync(),
-                    "Id",
-                    "DepartmentName"
-                );
-
                 return View();
             }
 
             try
             {
-                await _invitationService.SendInvitationAsync(email, roleId, departmentId);
+                await _invitationService.SendInvitationAsync(email, roleId);
                 TempData["SuccessMessage"] = $"Invitation email successfully sent to {email}!";
             }
             catch (System.Exception ex)

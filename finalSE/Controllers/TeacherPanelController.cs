@@ -8,7 +8,6 @@ using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using ClosedXML.Excel;
 
 namespace finalSE.Controllers
 {
@@ -63,13 +62,7 @@ namespace finalSE.Controllers
         // ================= ROUTINES =================
         public async Task<IActionResult> Routines()
         {
-            var teacher = await GetCurrentTeacherAsync();
-            if (teacher == null) return NotFound();
-
-            var routines = await _context.Routines
-                .Where(r => r.DepartmentId == teacher.DepartmentId || r.DepartmentId == null)
-                .OrderByDescending(r => r.UploadedAt)
-                .ToListAsync();
+            var routines = await _context.Routines.OrderByDescending(r => r.UploadedAt).ToListAsync();
             return View(routines);
         }
 
@@ -534,182 +527,6 @@ namespace finalSE.Controllers
                     lastUpdated = mark.LastUpdated.ToString("yyyy-MM-dd HH:mm")
                 } : null
             });
-        }
-
-        // ================= DOWNLOAD EXCEL TEMPLATE =================
-        [HttpGet]
-        public async Task<IActionResult> DownloadMarksTemplate(int subjectId)
-        {
-            var teacher = await GetCurrentTeacherAsync();
-            if (teacher == null) return NotFound("Teacher profile not found.");
-
-            var subject = await _context.Subjects.FirstOrDefaultAsync(s => s.Id == subjectId && s.DepartmentId == teacher.DepartmentId);
-            if (subject == null) return NotFound("Subject not found or not in your department.");
-
-            var students = await _context.Students
-                .Where(s => s.DepartmentId == teacher.DepartmentId)
-                .OrderBy(s => s.Name)
-                .ToListAsync();
-
-            var marks = await _context.StudentMarks
-                .Where(m => m.SubjectId == subjectId)
-                .ToListAsync();
-
-            using (var workbook = new XLWorkbook())
-            {
-                var worksheet = workbook.Worksheets.Add("Student Marks");
-
-                // Headers
-                worksheet.Cell(1, 1).Value = "Student ID";
-                worksheet.Cell(1, 2).Value = "Student Name";
-                worksheet.Cell(1, 3).Value = "Student Email";
-                worksheet.Cell(1, 4).Value = "Attendance (Max 10)";
-                worksheet.Cell(1, 5).Value = "Class Test (Max 20)";
-                worksheet.Cell(1, 6).Value = "Mid-Term (Max 30)";
-                worksheet.Cell(1, 7).Value = "Final Exam (Max 40)";
-
-                // Style headers
-                var headerRange = worksheet.Range("A1:G1");
-                headerRange.Style.Font.Bold = true;
-                headerRange.Style.Fill.BackgroundColor = XLColor.Indigo;
-                headerRange.Style.Font.FontColor = XLColor.White;
-
-                int row = 2;
-                foreach (var student in students)
-                {
-                    var mark = marks.FirstOrDefault(m => m.StudentId == student.Id);
-
-                    worksheet.Cell(row, 1).Value = student.Id;
-                    worksheet.Cell(row, 2).Value = student.Name;
-                    worksheet.Cell(row, 3).Value = student.Email;
-                    worksheet.Cell(row, 4).Value = mark?.Attendance ?? 0;
-                    worksheet.Cell(row, 5).Value = mark?.ClassTest ?? 0;
-                    worksheet.Cell(row, 6).Value = mark?.MidTerm ?? 0;
-                    worksheet.Cell(row, 7).Value = mark?.FinalExam ?? 0;
-                    row++;
-                }
-
-                worksheet.Columns().AdjustToContents();
-
-                using (var stream = new MemoryStream())
-                {
-                    workbook.SaveAs(stream);
-                    var content = stream.ToArray();
-                    string fileName = $"{subject.SubjectCode}_Marks_Template.xlsx";
-                    return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
-                }
-            }
-        }
-
-        // ================= UPLOAD MARKS EXCEL =================
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UploadMarksExcel(int subjectId, IFormFile excelFile)
-        {
-            var teacher = await GetCurrentTeacherAsync();
-            if (teacher == null) return NotFound("Teacher profile not found.");
-
-            var subject = await _context.Subjects.FirstOrDefaultAsync(s => s.Id == subjectId && s.DepartmentId == teacher.DepartmentId);
-            if (subject == null) return NotFound("Subject not found or not in your department.");
-
-            if (excelFile == null || excelFile.Length == 0)
-            {
-                TempData["ErrorMessage"] = "Please upload a valid Excel file.";
-                return RedirectToAction(nameof(StudentMarks), new { subjectId = subjectId });
-            }
-
-            var extension = Path.GetExtension(excelFile.FileName).ToLower();
-            if (extension != ".xlsx")
-            {
-                TempData["ErrorMessage"] = "Only Excel (.xlsx) files are supported.";
-                return RedirectToAction(nameof(StudentMarks), new { subjectId = subjectId });
-            }
-
-            try
-            {
-                int updatedCount = 0;
-                using (var stream = new MemoryStream())
-                {
-                    await excelFile.CopyToAsync(stream);
-                    stream.Position = 0;
-
-                    using (var workbook = new XLWorkbook(stream))
-                    {
-                        var worksheet = workbook.Worksheets.FirstOrDefault();
-                        if (worksheet == null)
-                        {
-                            TempData["ErrorMessage"] = "Excel file is empty.";
-                            return RedirectToAction(nameof(StudentMarks), new { subjectId = subjectId });
-                        }
-
-                        var rows = worksheet.RowsUsed().Skip(1); // skip headers
-                        foreach (var row in rows)
-                        {
-                            var studentIdCell = row.Cell(1).Value.ToString();
-                            if (string.IsNullOrWhiteSpace(studentIdCell) || !int.TryParse(studentIdCell, out int studentId))
-                            {
-                                continue;
-                            }
-
-                            var student = await _context.Students.FirstOrDefaultAsync(s => s.Id == studentId && s.DepartmentId == teacher.DepartmentId);
-                            if (student == null) continue;
-
-                            double attendance = 0;
-                            double classTest = 0;
-                            double midTerm = 0;
-                            double finalExam = 0;
-
-                            double.TryParse(row.Cell(4).Value.ToString(), out attendance);
-                            double.TryParse(row.Cell(5).Value.ToString(), out classTest);
-                            double.TryParse(row.Cell(6).Value.ToString(), out midTerm);
-                            double.TryParse(row.Cell(7).Value.ToString(), out finalExam);
-
-                            attendance = Math.Clamp(attendance, 0, 10);
-                            classTest = Math.Clamp(classTest, 0, 20);
-                            midTerm = Math.Clamp(midTerm, 0, 30);
-                            finalExam = Math.Clamp(finalExam, 0, 40);
-
-                            double total = attendance + classTest + midTerm + finalExam;
-                            var gradeInfo = CalculateGrade(total);
-
-                            var mark = await _context.StudentMarks.FirstOrDefaultAsync(m => m.StudentId == studentId && m.SubjectId == subjectId);
-                            if (mark == null)
-                            {
-                                mark = new StudentMark
-                                {
-                                    StudentId = studentId,
-                                    SubjectId = subjectId,
-                                    TeacherId = teacher.Id
-                                };
-                                _context.StudentMarks.Add(mark);
-                            }
-
-                            mark.TeacherId = teacher.Id;
-                            mark.Attendance = attendance;
-                            mark.ClassTest = classTest;
-                            mark.MidTerm = midTerm;
-                            mark.FinalExam = finalExam;
-                            mark.Total = total;
-                            mark.LetterGrade = gradeInfo.LetterGrade;
-                            mark.GradePoint = gradeInfo.GradePoint;
-                            mark.Remarks = gradeInfo.Remarks;
-                            mark.IsPublished = true;
-                            mark.LastUpdated = DateTime.Now;
-
-                            updatedCount++;
-                        }
-                    }
-                }
-
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = $"Successfully imported and published marks for {updatedCount} students!";
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = $"Failed to parse Excel file: {ex.Message}";
-            }
-
-            return RedirectToAction(nameof(StudentMarks), new { subjectId = subjectId });
         }
 
         private (string LetterGrade, double GradePoint, string Remarks) CalculateGrade(double total)

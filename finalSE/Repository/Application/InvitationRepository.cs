@@ -24,7 +24,6 @@ namespace finalSE.Repository.Application
         {
             return await _context.Invitations
                 .Include(i => i.Role)
-                .Include(i => i.Department)
                 .FirstOrDefaultAsync(i => i.Token == token);
         }
 
@@ -32,7 +31,6 @@ namespace finalSE.Repository.Application
         {
             return _context.Invitations
                 .Include(i => i.Role)
-                .Include(i => i.Department)
                 .FirstOrDefault(i => i.Token == token);
         }
 
@@ -41,7 +39,6 @@ namespace finalSE.Repository.Application
         {
             return await _context.Invitations
                 .Include(i => i.Role)
-                .Include(i => i.Department)
                 .OrderByDescending(i => i.CreatedAt)
                 .ToListAsync();
         }
@@ -50,7 +47,6 @@ namespace finalSE.Repository.Application
         {
             return _context.Invitations
                 .Include(i => i.Role)
-                .Include(i => i.Department)
                 .OrderByDescending(i => i.CreatedAt)
                 .ToList();
         }

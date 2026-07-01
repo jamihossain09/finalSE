@@ -26,9 +26,5 @@ namespace finalSE.Models
 
         // Created Time
         public DateTime CreatedAt { get; set; } = DateTime.Now;
-
-        // Department ID for department-wise connection
-        public int? DepartmentId { get; set; }
-        public virtual DepartmentModel? Department { get; set; }
     }
 }

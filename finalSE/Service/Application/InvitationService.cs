@@ -25,7 +25,7 @@ namespace finalSE.Service.Application
         }
 
         // ================= SEND INVITATION =================
-        public async Task SendInvitationAsync(string email, int roleId, int? departmentId)
+        public async Task SendInvitationAsync(string email, int roleId)
         {
             var token = Guid.NewGuid().ToString();
 
@@ -36,8 +36,7 @@ namespace finalSE.Service.Application
                 Token = token,
                 IsUsed = false,
                 CreatedAt = DateTime.Now,
-                ExpireDate = DateTime.Now.AddDays(1),
-                DepartmentId = departmentId
+                ExpireDate = DateTime.Now.AddDays(1)
             };
 
             await _repo.AddAsync(invitation);

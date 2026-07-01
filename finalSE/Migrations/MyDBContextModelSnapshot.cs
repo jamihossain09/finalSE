@@ -29,9 +29,6 @@ namespace finalSE.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("DepartmentId")
-                        .HasColumnType("int");
-
                     b.Property<string>("FilePath")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -48,8 +45,6 @@ namespace finalSE.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("DepartmentId");
 
                     b.ToTable("Routines");
                 });
@@ -153,9 +148,6 @@ namespace finalSE.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("DepartmentId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -175,8 +167,6 @@ namespace finalSE.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DepartmentId");
-
                     b.HasIndex("RoleId");
 
                     b.ToTable("Invitations");
@@ -189,9 +179,6 @@ namespace finalSE.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("DepartmentId")
-                        .HasColumnType("int");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
@@ -208,8 +195,6 @@ namespace finalSE.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("DepartmentId");
 
                     b.ToTable("Notices");
                 });
@@ -468,15 +453,6 @@ namespace finalSE.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Routine", b =>
-                {
-                    b.HasOne("finalSE.Models.DepartmentModel", "Department")
-                        .WithMany()
-                        .HasForeignKey("DepartmentId");
-
-                    b.Navigation("Department");
-                });
-
             modelBuilder.Entity("finalSE.Models.AssignmentTask", b =>
                 {
                     b.HasOne("finalSE.Models.Teacher", "Teacher")
@@ -501,28 +477,13 @@ namespace finalSE.Migrations
 
             modelBuilder.Entity("finalSE.Models.Invitation", b =>
                 {
-                    b.HasOne("finalSE.Models.DepartmentModel", "Department")
-                        .WithMany()
-                        .HasForeignKey("DepartmentId");
-
                     b.HasOne("finalSE.Models.Role", "Role")
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Department");
-
                     b.Navigation("Role");
-                });
-
-            modelBuilder.Entity("finalSE.Models.Notice", b =>
-                {
-                    b.HasOne("finalSE.Models.DepartmentModel", "Department")
-                        .WithMany()
-                        .HasForeignKey("DepartmentId");
-
-                    b.Navigation("Department");
                 });
 
             modelBuilder.Entity("finalSE.Models.StudentMark", b =>
