@@ -167,6 +167,7 @@ namespace finalSE.Controllers
             ViewBag.Email = invitation.Email;
             ViewBag.RoleId = invitation.RoleId;
             ViewBag.RoleName = role?.RoleName;
+            ViewBag.DepartmentId = invitation.DepartmentId;
 
             var departments = await _departmentService.GetAllAsync();
             ViewBag.Departments = departments;
@@ -190,6 +191,7 @@ namespace finalSE.Controllers
             user.RoleId = invitation.RoleId;
 
             var role = _roleService.GetById(invitation.RoleId);
+            int finalDeptId = invitation.DepartmentId ?? departmentId;
 
             // Check if username already exists
             var allUsers = _userService.GetAll();
@@ -200,6 +202,7 @@ namespace finalSE.Controllers
                 ViewBag.Email = invitation.Email;
                 ViewBag.RoleId = invitation.RoleId;
                 ViewBag.RoleName = role?.RoleName;
+                ViewBag.DepartmentId = invitation.DepartmentId;
                 ViewBag.Departments = await _departmentService.GetAllAsync();
                 return View("Register", user);
             }
@@ -211,7 +214,7 @@ namespace finalSE.Controllers
                 User = user,
                 Otp = otp,
                 Token = token,
-                DepartmentId = departmentId,
+                DepartmentId = finalDeptId,
                 Age = age,
                 Phone = phone,
                 ExpiryTime = DateTime.Now.AddMinutes(10)

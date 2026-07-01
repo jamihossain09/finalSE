@@ -107,7 +107,22 @@
                     </div>
                 }
 
-                @if ((ViewBag.RoleName == "Student" || ViewBag.RoleName == "Teacher") && ViewBag.Departments != null)
+                @if (ViewBag.DepartmentId != null)
+                {
+                    <input type="hidden" name="departmentId" value="@ViewBag.DepartmentId" />
+                    var depts = (IEnumerable<dynamic>)ViewBag.Departments;
+                    var assignedDept = depts.FirstOrDefault(d => d.Id == (int)ViewBag.DepartmentId);
+                    <div class="form-group mb-4">
+                        <label class="form-label fw-semibold">Department</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0" style="background-color: #f1f5f9;">
+                                <i class="fas fa-building text-muted"></i>
+                            </span>
+                            <input class="form-control border-start-0" value="@(assignedDept?.DepartmentName ?? "Assigned Department")" readonly style="height: 3rem; background-color: #f1f5f9;" />
+                        </div>
+                    </div>
+                }
+                else if ((ViewBag.RoleName == "Student" || ViewBag.RoleName == "Teacher") && ViewBag.Departments != null)
                 {
                     <div class="form-group mb-4">
                         <label class="form-label fw-semibold">Select Department</label>

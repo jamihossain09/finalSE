@@ -4,7 +4,7 @@ namespace finalSE.Service.Interface
 {
     public interface IInvitationService
     {
-        Task SendInvitationAsync(string email, int roleId);
+        Task SendInvitationAsync(string email, int roleId, int? departmentId);
 
         Task<Invitation?> ValidateTokenAsync(string token);
 

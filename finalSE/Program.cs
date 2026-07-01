@@ -54,6 +54,25 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<MyDBContext>();
+        try
+        {
+            context.Database.ExecuteSqlRaw(@"
+                IF EXISTS (SELECT * FROM sys.tables WHERE name = '__EFMigrationsHistory')
+                BEGIN
+                    IF NOT EXISTS (SELECT * FROM __EFMigrationsHistory WHERE MigrationId = '20260624085913_AddDepartmentToRoutineAndNotice')
+                    BEGIN
+                        INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion) 
+                        VALUES ('20260624085913_AddDepartmentToRoutineAndNotice', '8.0.0');
+                    END
+                    IF NOT EXISTS (SELECT * FROM __EFMigrationsHistory WHERE MigrationId = '20260701014243_AddDepartmentToInvitation')
+                    BEGIN
+                        INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion) 
+                        VALUES ('20260701014243_AddDepartmentToInvitation', '8.0.0');
+                    END
+                END
+            ");
+        }
+        catch { }
         context.Database.Migrate();
 
         // Clean up orphan StudentMark rows from before subject system was added (SubjectId = 0)

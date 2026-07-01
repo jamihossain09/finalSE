@@ -58,8 +58,9 @@
                         <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")"
                                asp-controller="Home" asp-action="Index">
                             <i class="fas fa-house"></i>
-                            Public Home
+                            Home
                         </a>
+
                         <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Student" ? "active" : "")"
                                asp-controller="Student" asp-action="Index">
                             <i class="fas fa-user-graduate"></i>
@@ -104,6 +105,12 @@
                     }
                     else if (User.IsInRole("Teacher"))
                     {
+                        <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")"
+                               asp-controller="Home" asp-action="Index">
+                            <i class="fas fa-house"></i>
+                            Home
+                        </a>
+
                         <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "TeacherPanel" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")"
                                asp-controller="TeacherPanel" asp-action="Index">
                             <i class="fas fa-chart-pie"></i>
@@ -148,6 +155,11 @@
                     }
                     else if (User.IsInRole("Student"))
                     {
+                        <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")"
+                               asp-controller="Home" asp-action="Index">
+                            <i class="fas fa-house"></i>
+                            Home
+                        </a>
                         <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "StudentPortal" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")"
                                asp-controller="StudentPortal" asp-action="Index">
                             <i class="fas fa-chart-pie"></i>

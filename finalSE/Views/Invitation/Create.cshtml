@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewData["Title"] = "Send Invitation";
 }
 
@@ -16,8 +16,18 @@
     <div class="form-group">
         <label>Role</label>
         <select name="roleId" class="form-control"
-                asp-items="ViewBag.Roles">
+                asp-items="ViewBag.Roles" required>
             <option value="">Select Role</option>
+        </select>
+    </div>
+
+    <br />
+
+    <div class="form-group">
+        <label>Department (Required for Student/Teacher)</label>
+        <select name="departmentId" class="form-control"
+                asp-items="ViewBag.Departments">
+            <option value="">Select Department</option>
         </select>
     </div>
 
