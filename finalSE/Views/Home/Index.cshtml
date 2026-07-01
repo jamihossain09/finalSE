@@ -1,148 +1,214 @@
-﻿@{
-    ViewData["Title"] = "Home";
+@{
+    ViewData["Title"] = "Welcome to School Manager";
+    var notices = ViewBag.Notices as List<finalSE.Models.Notice>;
+    var teachers = ViewBag.Teachers as List<finalSE.Models.Teacher>;
 }
 
-@if (!User.Identity.IsAuthenticated)
-{
-    <!-- PREMIUM TOP-NOTCH GUEST HOME -->
-    <div class="guest-hero-bg">
-        <div style="max-width: 1200px; margin: 0 auto; padding: 6rem 2rem; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-            
-            <!-- HERO TEXT -->
-            <div class="text-center mb-5 animate-up">
-                <div style="display: inline-block; padding: 0.5rem 1.5rem; background: rgba(79, 70, 229, 0.1); color: var(--primary); border-radius: 2rem; font-weight: 700; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1.5rem;">
-                    Premium Educational Solution
-                </div>
-                <h1 style="font-size: 5rem; font-weight: 800; letter-spacing: -0.04em; line-height: 1.1; margin-bottom: 2rem; color: var(--text-main);">
-                    School Management<br />
-                    <span style="background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">System</span>
-                </h1>
-                
-                <!-- MAIN ACTIONS -->
-                <div class="d-flex flex-wrap justify-content-center gap-3 mt-4">
-                    <a asp-controller="Account" asp-action="Login" class="btn-primary-premium">
-                        <i class="fas fa-sign-in-alt"></i>
-                        Login to Portal
+<div class="guest-hero-bg py-5">
+    <div class="container">
+        
+        <!-- HERO BANNER -->
+        <div class="text-center mb-5 animate-up">
+            <div class="badge bg-primary-subtle text-primary border border-primary border-opacity-25 px-3 py-2 mb-3 fw-bold uppercase tracking-wider" style="border-radius: 30px; font-size: 0.8rem; letter-spacing: 0.05em;">
+                Premium Educational Solution
+            </div>
+            <h1 class="display-3 fw-extrabold text-dark tracking-tight mb-3">
+                Smart School<br />
+                <span style="background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Management Portal</span>
+            </h1>
+            <p class="lead text-muted mx-auto mb-4" style="max-width: 600px;">
+                An integrated platform connecting teachers, students, and administration for seamless academic collaboration.
+            </p>
+
+            <!-- PORTAL NAVIGATION BUTTONS (ACCORDING TO ROLE) -->
+            <div class="d-flex flex-wrap justify-content-center gap-3 mt-4">
+                @if (!User.Identity.IsAuthenticated)
+                {
+                    <a asp-controller="Account" asp-action="Login" class="btn-primary-premium shadow">
+                        <i class="fas fa-sign-in-alt me-2"></i> Login to Portal
                     </a>
                     <a asp-controller="Account" asp-action="Register" class="btn-secondary-premium">
-                        <i class="fas fa-user-plus"></i>
-                        Register School
+                        <i class="fas fa-user-plus me-2"></i> Register School
                     </a>
-                </div>
-            </div>
-
-            <!-- STATS SECTION -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; width: 100%; max-width: 1000px; margin-top: 4rem;" class="animate-up">
-                
-                <!-- TOTAL USERS -->
-                <div class="premium-card">
-                    <div class="d-flex align-items-center gap-4">
-                        <div style="width: 80px; height: 80px; background: rgba(79, 70, 229, 0.08); color: var(--primary); border-radius: 1.25rem; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
-                            <i class="fas fa-users-viewfinder"></i>
-                        </div>
-                        <div>
-                            <div class="stat-label">System Users</div>
-                            <div class="stat-value">@ViewBag.TotalUsers</div>
-                        </div>
-                    </div>
-                    <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.875rem;">
-                        <i class="fas fa-shield-halved me-2 text-primary"></i> Verified administrative accounts
-                    </div>
-                </div>
-
-                <!-- TOTAL STUDENTS -->
-                <div class="premium-card">
-                    <div class="d-flex align-items-center gap-4">
-                        <div style="width: 80px; height: 80px; background: rgba(6, 182, 212, 0.08); color: var(--accent); border-radius: 1.25rem; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
-                            <i class="fas fa-graduation-cap"></i>
-                        </div>
-                        <div>
-                            <div class="stat-label">Total Students</div>
-                            <div class="stat-value">@ViewBag.TotalStudents</div>
-                        </div>
-                    </div>
-                    <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.875rem;">
-                        <i class="fas fa-check-double me-2 text-accent"></i> Currently enrolled scholars
-                    </div>
-                </div>
-
+                }
+                else
+                {
+                    if (User.IsInRole("Admin"))
+                    {
+                        <a asp-controller="Home" asp-action="AdminDashboard" class="btn-primary-premium shadow">
+                            <i class="fas fa-user-shield me-2"></i> Go to Admin Dashboard
+                        </a>
+                    }
+                    else if (User.IsInRole("Teacher"))
+                    {
+                        <a asp-controller="TeacherPanel" asp-action="Index" class="btn-primary-premium shadow">
+                            <i class="fas fa-chalkboard-teacher me-2"></i> Go to Teacher Panel
+                        </a>
+                    }
+                    else if (User.IsInRole("Student"))
+                    {
+                        <a asp-controller="StudentPortal" asp-action="Index" class="btn-primary-premium shadow">
+                            <i class="fas fa-user-graduate me-2"></i> Go to Student Portal
+                        </a>
+                    }
+                }
             </div>
         </div>
+
+        <!-- QUICK SYSTEM STATS -->
+        <div class="row g-4 mb-5 animate-up">
+            <div class="col-md-3">
+                <div class="premium-card text-center p-4">
+                    <div class="mx-auto mb-3 text-primary d-flex justify-content-center align-items-center" style="width: 60px; height: 60px; background: rgba(79, 70, 229, 0.08); border-radius: 50%;">
+                        <i class="fas fa-users-viewfinder fs-4"></i>
+                    </div>
+                    <div class="stat-label">Total Users</div>
+                    <div class="stat-value" style="font-size: 2rem;">@ViewBag.TotalUsers</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="premium-card text-center p-4">
+                    <div class="mx-auto mb-3 text-accent d-flex justify-content-center align-items-center" style="width: 60px; height: 60px; background: rgba(6, 182, 212, 0.08); border-radius: 50%;">
+                        <i class="fas fa-graduation-cap fs-4"></i>
+                    </div>
+                    <div class="stat-label">Students</div>
+                    <div class="stat-value" style="font-size: 2rem;">@ViewBag.TotalStudents</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="premium-card text-center p-4">
+                    <div class="mx-auto mb-3 text-success d-flex justify-content-center align-items-center" style="width: 60px; height: 60px; background: rgba(16, 185, 129, 0.08); border-radius: 50%;">
+                        <i class="fas fa-chalkboard-teacher fs-4"></i>
+                    </div>
+                    <div class="stat-label">Faculty Members</div>
+                    <div class="stat-value" style="font-size: 2rem;">@ViewBag.TotalTeachers</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="premium-card text-center p-4">
+                    <div class="mx-auto mb-3 text-warning d-flex justify-content-center align-items-center" style="width: 60px; height: 60px; background: rgba(245, 158, 11, 0.08); border-radius: 50%;">
+                        <i class="fas fa-sitemap fs-4"></i>
+                    </div>
+                    <div class="stat-label">Departments</div>
+                    <div class="stat-value" style="font-size: 2rem;">@ViewBag.TotalDepartments</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 animate-up">
+            
+            <!-- RECENT ANNOUNCEMENTS (NOTICES) -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm h-100" style="border-radius: 24px;">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4 pb-2">
+                        <h4 class="fw-bold m-0"><i class="fas fa-bullhorn text-danger me-2"></i>Notice Board</h4>
+                        <p class="text-muted small mt-1 mb-0">Stay updated with the latest notices and academic announcements.</p>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        @if (notices != null && notices.Any())
+                        {
+                            <div class="d-flex flex-column gap-3">
+                                @foreach (var notice in notices)
+                                {
+                                    <div class="p-3 border rounded-4 d-flex align-items-start gap-3 bg-light transition-all" style="transition: transform .2s ease;">
+                                        <div class="p-3 bg-danger-subtle text-danger rounded-3" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-file-pdf fs-5"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="fw-bold text-dark mb-1">@notice.Title</h6>
+                                            <p class="text-muted small mb-2 text-truncate-2">@notice.Description</p>
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <span class="text-muted small"><i class="far fa-clock me-1"></i>@notice.PublishedAt.ToString("MMM dd, yyyy")</span>
+                                                <a href="@notice.FilePath" class="btn btn-sm btn-outline-danger px-3" target="_blank" style="border-radius: 8px;">
+                                                    <i class="fas fa-download me-1"></i> View PDF
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5 text-muted">
+                                <i class="fas fa-bell-slash fa-3x mb-3 text-light"></i>
+                                <p class="mb-0">No active notices published at this moment.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- TEACHERS LIST GROUPED BY DEPARTMENT -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm h-100" style="border-radius: 24px;">
+                    <div class="card-header bg-transparent border-0 pt-4 px-4 pb-2">
+                        <h4 class="fw-bold m-0"><i class="fas fa-id-card text-success me-2"></i>Faculty Directory</h4>
+                        <p class="text-muted small mt-1 mb-0">List of academic staff grouped by their respective departments.</p>
+                    </div>
+                    <div class="card-body px-4 pb-4" style="max-height: 520px; overflow-y: auto;">
+                        @if (teachers != null && teachers.Any())
+                        {
+                            var groupedTeachers = teachers.GroupBy(t => t.Department?.DepartmentName ?? "General");
+                            <div class="accordion accordion-flush" id="teachersAccordion">
+                                @{ int groupIndex = 0; }
+                                @foreach (var group in groupedTeachers)
+                                {
+                                    bool isFirst = groupIndex == 0;
+                                    <div class="accordion-item border-0 mb-3" style="border-radius: 16px; overflow: hidden; background: #f8fafc;">
+                                        <h2 class="accordion-header" id="heading-@groupIndex">
+                                            <button class="accordion-button bg-light fw-bold text-dark border-0 @(isFirst ? "" : "collapsed")" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-@groupIndex" aria-expanded="@(isFirst ? "true" : "false")" aria-controls="collapse-@groupIndex" style="border-radius: 16px; box-shadow: none;">
+                                                <i class="fas fa-users-rectangle text-primary me-2"></i> @group.Key (@group.Count() Faculty)
+                                            </button>
+                                        </h2>
+                                        <div id="collapse-@groupIndex" class="accordion-collapse collapse @(isFirst ? "show" : "")" aria-labelledby="heading-@groupIndex" data-bs-parent="#teachersAccordion">
+                                            <div class="accordion-body p-3">
+                                                <div class="d-flex flex-column gap-2.5">
+                                                    @foreach (var teacherItem in group)
+                                                    {
+                                                        <div class="p-3 bg-white rounded-3 border d-flex justify-content-between align-items-center gap-2">
+                                                            <div>
+                                                                <div class="fw-bold text-dark">@teacherItem.Name</div>
+                                                                <div class="text-muted small"><i class="far fa-envelope me-1"></i>@teacherItem.Email</div>
+                                                                @if (!string.IsNullOrEmpty(teacherItem.Phone))
+                                                                {
+                                                                    <div class="text-muted small"><i class="fas fa-phone me-1"></i>@teacherItem.Phone</div>
+                                                                }
+                                                            </div>
+                                                            <div class="p-2 bg-primary-subtle text-primary rounded-circle" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;" title="Faculty Member">
+                                                                <i class="fas fa-chalkboard-user"></i>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    groupIndex++;
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5 text-muted">
+                                <i class="fas fa-user-slash fa-3x mb-3 text-light"></i>
+                                <p class="mb-0">No faculty records found in the database.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
     </div>
-}
-else
-{
-    <!-- PREMIUM ADMIN DASHBOARD -->
-    <div class="row g-4 animate-up">
-        <div class="col-md-4">
-            <div class="premium-card" style="border-left: 4px solid var(--primary);">
-                <div class="stat-label">Active Students</div>
-                <div class="stat-value">@ViewBag.TotalStudents</div>
-                <div class="mt-2 text-success small"><i class="fas fa-arrow-up"></i> +5% from last month</div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="premium-card" style="border-left: 4px solid var(--accent);">
-                <div class="stat-label">Total Staff</div>
-                <div class="stat-value">@ViewBag.TotalUsers</div>
-                <div class="mt-2 text-muted small"><i class="fas fa-user-check"></i> System administrators</div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="premium-card" style="border-left: 4px solid #10b981;">
-                <div class="stat-label">Server Health</div>
-                <div class="stat-value text-success" style="font-size: 1.5rem;">Operational</div>
-                <div class="mt-2 text-muted small"><i class="fas fa-clock"></i> Up-time: 99.9%</div>
-            </div>
-        </div>
+</div>
 
-        <div class="col-md-8">
-            <div class="premium-card" style="min-height: 400px;">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="fw-bold m-0">Management Overview</h5>
-                    <div class="badge bg-light text-primary p-2">Session: 2026-27</div>
-                </div>
-                <div class="p-5 text-center border rounded-4 bg-light" style="border-style: dashed !important;">
-                    <i class="fas fa-chart-line fa-4x mb-3 text-muted opacity-25"></i>
-                    <h6 class="text-muted fw-bold">Live Data Stream Ready</h6>
-                    <p class="text-muted small">Academic performance and metrics will populate here as data is recorded.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="premium-card" style="min-height: 400px;">
-                <h5 class="fw-bold mb-4">Core Actions</h5>
-                <div class="d-grid gap-3">
-                    <a asp-controller="Student" asp-action="Index" class="btn btn-light text-start p-3 border rounded-3 shadow-sm">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="p-2 bg-primary text-white rounded-2"><i class="fas fa-user-graduate"></i></div>
-                            <div>
-                                <div class="fw-bold">Student Directory</div>
-                                <div class="small text-muted">Manage enrollments</div>
-                            </div>
-                        </div>
-                    </a>
-                    <a asp-controller="Teacher" asp-action="Index" class="btn btn-light text-start p-3 border rounded-3 shadow-sm">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="p-2 bg-info text-white rounded-2"><i class="fas fa-chalkboard-teacher"></i></div>
-                            <div>
-                                <div class="fw-bold">Teacher Records</div>
-                                <div class="small text-muted">Faculty management</div>
-                            </div>
-                        </div>
-                    </a>
-                    <a asp-controller="Routine" asp-action="Index" class="btn btn-light text-start p-3 border rounded-3 shadow-sm">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="p-2 bg-success text-white rounded-2"><i class="fas fa-calendar-days"></i></div>
-                            <div>
-                                <div class="fw-bold">Academic Routine</div>
-                                <div class="small text-muted">Schedules & Timings</div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-}
+<style>
+    .display-3 { font-size: 3.5rem; line-height: 1.15; }
+    .fw-extrabold { font-weight: 800; }
+    .transition-all:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
+    .text-truncate-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; }
+    .accordion-button:not(.collapsed) { background-color: rgba(79, 70, 229, 0.05) !important; color: var(--primary) !important; }
+    .accordion-button::after { filter: grayscale(1) invert(0); }
+</style>

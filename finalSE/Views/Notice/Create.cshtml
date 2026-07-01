@@ -28,6 +28,21 @@
                             <span asp-validation-for="Description" class="text-danger"></span>
                         </div>
                         
+                        <div class="mb-3">
+                            <label for="DepartmentId" class="form-label fw-semibold">Target Department</label>
+                            <select name="DepartmentId" id="DepartmentId" class="form-select" style="border-radius: 8px;">
+                                <option value="">Global / All Departments</option>
+                                @if (ViewBag.Departments != null)
+                                {
+                                    foreach (var dept in (List<finalSE.Models.DepartmentModel>)ViewBag.Departments)
+                                    {
+                                        <option value="@dept.Id">@dept.DepartmentName</option>
+                                    }
+                                }
+                            </select>
+                            <div class="form-text">Select a specific department or leave as Global for all students.</div>
+                        </div>
+
                         <div class="mb-4">
                             <label class="form-label fw-semibold">Upload PDF Document</label>
                             <input type="file" name="pdfFile" class="form-control" accept=".pdf" required />

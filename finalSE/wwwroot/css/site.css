@@ -266,3 +266,77 @@ body {
 .animate-up {
     animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
+
+/* Mobile Responsiveness Improvements */
+@media (max-width: 991px) {
+    .admin-layout {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .sidebar-brand {
+        padding: 1.5rem;
+    }
+    
+    .sidebar-menu {
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 0.5rem;
+        white-space: nowrap;
+    }
+    
+    .menu-item {
+        margin-bottom: 0;
+        margin-right: 0.5rem;
+        padding: 0.6rem 1rem;
+        font-size: 0.85rem;
+    }
+    
+    .main-content {
+        margin-left: 0;
+        padding: 1.5rem;
+    }
+    
+    .main-content header {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem !important;
+    }
+    
+    .main-content header div {
+        width: 100%;
+    }
+    
+    .guest-navbar {
+        padding: 1rem 1.5rem;
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .footer, footer {
+        margin-left: 0 !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .display-3 {
+        font-size: 2.2rem !important;
+    }
+    
+    .guest-hero-bg div {
+        padding: 3rem 1rem !important;
+    }
+    
+    .stat-value {
+        font-size: 2rem !important;
+    }
+}

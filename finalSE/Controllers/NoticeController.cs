@@ -7,6 +7,8 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 
+using System.Security.Claims;
+
 namespace finalSE.Controllers
 {
     [Authorize]
@@ -21,17 +23,56 @@ namespace finalSE.Controllers
             _environment = environment;
         }
 
-        // ================= INDEX (ALL USERS) =================
+        // ================= INDEX (ALL USERS - FILTERED BY DEPT) =================
         public async Task<IActionResult> Index()
         {
-            var notices = await _context.Notices.OrderByDescending(n => n.PublishedAt).ToListAsync();
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!string.IsNullOrEmpty(userIdString) && int.TryParse(userIdString, out int userId))
+            {
+                var user = await _context.Users.FindAsync(userId);
+                if (user != null)
+                {
+                    if (User.IsInRole("Student"))
+                    {
+                        var student = await _context.Students.FirstOrDefaultAsync(s => s.Email == user.Email);
+                        if (student != null)
+                        {
+                            var studentNotices = await _context.Notices
+                                .Include(n => n.Department)
+                                .Where(n => n.DepartmentId == null || n.DepartmentId == student.DepartmentId)
+                                .OrderByDescending(n => n.PublishedAt)
+                                .ToListAsync();
+                            return View(studentNotices);
+                        }
+                    }
+                    else if (User.IsInRole("Teacher"))
+                    {
+                        var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.Email == user.Email);
+                        if (teacher != null)
+                        {
+                            var teacherNotices = await _context.Notices
+                                .Include(n => n.Department)
+                                .Where(n => n.DepartmentId == null || n.DepartmentId == teacher.DepartmentId)
+                                .OrderByDescending(n => n.PublishedAt)
+                                .ToListAsync();
+                            return View(teacherNotices);
+                        }
+                    }
+                }
+            }
+
+            var notices = await _context.Notices
+                .Include(n => n.Department)
+                .OrderByDescending(n => n.PublishedAt)
+                .ToListAsync();
             return View(notices);
         }
 
         // ================= CREATE (GET - ADMIN ONLY) =================
         [Authorize(Roles = "Admin")]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            ViewBag.Departments = await _context.Departments.OrderBy(d => d.DepartmentName).ToListAsync();
             return View();
         }
 
@@ -44,12 +85,14 @@ namespace finalSE.Controllers
             if (pdfFile == null || pdfFile.Length == 0)
             {
                 ModelState.AddModelError("FilePath", "Please upload a PDF notice file.");
+                ViewBag.Departments = await _context.Departments.OrderBy(d => d.DepartmentName).ToListAsync();
                 return View(notice);
             }
 
             if (Path.GetExtension(pdfFile.FileName).ToLower() != ".pdf")
             {
                 ModelState.AddModelError("FilePath", "Only PDF files are allowed.");
+                ViewBag.Departments = await _context.Departments.OrderBy(d => d.DepartmentName).ToListAsync();
                 return View(notice);
             }
 
@@ -80,6 +123,7 @@ namespace finalSE.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            ViewBag.Departments = await _context.Departments.OrderBy(d => d.DepartmentName).ToListAsync();
             return View(notice);
         }
 

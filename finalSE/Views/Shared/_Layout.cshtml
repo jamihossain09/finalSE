@@ -49,12 +49,17 @@
                 <nav class="sidebar-menu">
                     @if (User.IsInRole("Admin"))
                     {
-                        <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "active" : "")"
-                               asp-controller="Home" asp-action="Index">
+                        <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["Action"]?.ToString() == "AdminDashboard" ? "active" : "")"
+                               asp-controller="Home" asp-action="AdminDashboard">
                             <i class="fas fa-chart-pie"></i>
                             Dashboard
                         </a>
-                        
+
+                        <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")"
+                               asp-controller="Home" asp-action="Index">
+                            <i class="fas fa-house"></i>
+                            Public Home
+                        </a>
                         <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Student" ? "active" : "")"
                                asp-controller="Student" asp-action="Index">
                             <i class="fas fa-user-graduate"></i>

@@ -16,5 +16,8 @@ namespace finalSE.Models
         public string FilePath { get; set; } // PDF file path
         
         public DateTime PublishedAt { get; set; } = DateTime.Now;
+
+        public int? DepartmentId { get; set; }
+        public virtual DepartmentModel? Department { get; set; }
     }
 }

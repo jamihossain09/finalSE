@@ -1,4 +1,4 @@
-﻿@model Routine
+@model Routine
 
 <h2>Upload Routine</h2>
 
@@ -32,6 +32,21 @@
 
         </select>
 
+    </div>
+
+    <div class="mb-3">
+        <label>Target Department</label>
+        <select name="DepartmentId" id="DepartmentId" class="form-control">
+            <option value="">Global / All Departments</option>
+            @if (ViewBag.Departments != null)
+            {
+                foreach (var dept in (List<finalSE.Models.DepartmentModel>)ViewBag.Departments)
+                {
+                    <option value="@dept.Id">@dept.DepartmentName</option>
+                }
+            }
+        </select>
+        <span class="form-text text-muted">Select a specific department or leave as Global.</span>
     </div>
 
     <div class="mb-3">

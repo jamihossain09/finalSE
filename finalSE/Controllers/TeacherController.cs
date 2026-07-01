@@ -1,4 +1,4 @@
-﻿using finalSE.Models;
+using finalSE.Models;
 using finalSE.Service.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace finalSE.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public class TeacherController : Controller
     {
         private readonly ITeacherService _teacherService;
