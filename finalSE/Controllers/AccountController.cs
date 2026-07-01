@@ -177,7 +177,7 @@ namespace finalSE.Controllers
 
         // ================= INVITATION REGISTER (POST) =================
         [HttpPost]
-        public async Task<IActionResult> RegisterFromInvitation(User user, string token, int departmentId, int? age, string? phone)
+        public async Task<IActionResult> RegisterFromInvitation(User user, string token, int departmentId, int? age, string? phone, string? fullName)
         {
             var invitation = await _invitationService.ValidateTokenAsync(token);
 
@@ -217,6 +217,7 @@ namespace finalSE.Controllers
                 DepartmentId = finalDeptId,
                 Age = age,
                 Phone = phone,
+                FullName = !string.IsNullOrWhiteSpace(fullName) ? fullName : user.UserName,
                 ExpiryTime = DateTime.Now.AddMinutes(10)
             };
             _memoryCache.Set("RegOTP_" + user.Email, pending, TimeSpan.FromMinutes(10));
@@ -317,7 +318,7 @@ namespace finalSE.Controllers
                                 {
                                     await _studentService.CreateAsync(new StudentModel
                                     {
-                                        Name = pending.User.UserName,
+                                        Name = pending.FullName ?? pending.User.UserName,
                                         Email = pending.User.Email,
                                         Age = pending.Age ?? 0,
                                         Address = pending.User.Address ?? "",
@@ -328,7 +329,7 @@ namespace finalSE.Controllers
                                 {
                                     await _teacherService.CreateAsync(new Teacher
                                     {
-                                        Name = pending.User.UserName,
+                                        Name = pending.FullName ?? pending.User.UserName,
                                         Email = pending.User.Email,
                                         Phone = pending.Phone ?? "",
                                         Address = pending.User.Address ?? "",
@@ -547,10 +548,11 @@ namespace finalSE.Controllers
     {
         public User User { get; set; }
         public string Otp { get; set; }
-        public string Token { get; set; } // for invitation
-        public int DepartmentId { get; set; } // for invitation
-        public int? Age { get; set; } // for invitation (student)
-        public string Phone { get; set; } // for invitation (teacher)
+        public string Token { get; set; }       // for invitation
+        public int DepartmentId { get; set; }   // for invitation
+        public int? Age { get; set; }           // for invitation (student)
+        public string Phone { get; set; }       // for invitation (teacher)
+        public string? FullName { get; set; }   // full display name for Teacher/Student profile
         public DateTime ExpiryTime { get; set; }
     }
 }

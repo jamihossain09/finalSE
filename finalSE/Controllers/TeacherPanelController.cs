@@ -493,6 +493,11 @@ namespace finalSE.Controllers
             var teacher = await GetCurrentTeacherAsync();
             if (teacher == null) return Json(new { success = false, message = "Teacher profile not found." });
 
+            // Verify the subject belongs to the teacher's own department
+            var subject = await _context.Subjects.FirstOrDefaultAsync(s => s.Id == subjectId && s.DepartmentId == teacher.DepartmentId);
+            if (subject == null)
+                return Json(new { success = false, message = "You are not authorized to publish results for a subject outside your department." });
+
             var mark = await _context.StudentMarks
                 .Include(m => m.Student)
                 .FirstOrDefaultAsync(m => m.StudentId == studentId && m.SubjectId == subjectId);
