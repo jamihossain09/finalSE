@@ -95,172 +95,141 @@ using (var scope = app.Services.CreateScope())
             context.SaveChanges();
         }
 
-        // Seed Departments
-        if (!context.Departments.Any())
+        // Seed Departments & Subjects (Check if CSE/BBA exists, if not, reset and seed everything cleanly)
+        if (!context.Departments.Any(d => d.DepartmentName == "CSE" || d.DepartmentName == "BBA"))
         {
-            context.Departments.AddRange(
-                new DepartmentModel { DepartmentName = "Computer Science" },
-                new DepartmentModel { DepartmentName = "Electrical Engineering" },
-                new DepartmentModel { DepartmentName = "Physics" },
-                new DepartmentModel { DepartmentName = "Mathematics" }
-            );
+            // Clear existing academic data first to avoid FK conflicts and start fresh
+            context.StudentMarks.ExecuteDelete();
+            context.ClassRecords.ExecuteDelete();
+            context.Tutorials.ExecuteDelete();
+            context.AssignmentTasks.ExecuteDelete();
+            context.Routines.ExecuteDelete();
+            context.Notices.ExecuteDelete();
+            context.Invitations.ExecuteDelete();
+
+            // Clear students and teachers profiles
+            context.Students.ExecuteDelete();
+            context.Teachers.ExecuteDelete();
+
+            // Clear old subjects and departments
+            context.Subjects.ExecuteDelete();
+            context.Departments.ExecuteDelete();
+
+            // Clear users except admin
+            var usersToClear = context.Users.Where(u => u.UserName != "admin").ToList();
+            context.Users.RemoveRange(usersToClear);
             context.SaveChanges();
-        }
 
-        // Seed Subjects (minimum 6 per department)
-        if (!context.Subjects.Any())
-        {
-            var csDept  = context.Departments.First(d => d.DepartmentName == "Computer Science");
-            var eeDept  = context.Departments.First(d => d.DepartmentName == "Electrical Engineering");
-            var phyDept = context.Departments.First(d => d.DepartmentName == "Physics");
-            var mathDept= context.Departments.First(d => d.DepartmentName == "Mathematics");
+            // Seed Departments
+            var physics = new DepartmentModel { DepartmentName = "Physics" };
+            var eee = new DepartmentModel { DepartmentName = "EEE" };
+            var bba = new DepartmentModel { DepartmentName = "BBA" };
+            var cse = new DepartmentModel { DepartmentName = "CSE" };
+            var math = new DepartmentModel { DepartmentName = "Math" };
 
+            context.Departments.AddRange(physics, eee, bba, cse, math);
+            context.SaveChanges();
+
+            // Seed Subjects
             context.Subjects.AddRange(
-                // Computer Science
-                new Subject { SubjectName = "Data Structures & Algorithms", SubjectCode = "CSE101", DepartmentId = csDept.Id },
-                new Subject { SubjectName = "Object Oriented Programming",  SubjectCode = "CSE102", DepartmentId = csDept.Id },
-                new Subject { SubjectName = "Database Management Systems",  SubjectCode = "CSE201", DepartmentId = csDept.Id },
-                new Subject { SubjectName = "Operating Systems",            SubjectCode = "CSE202", DepartmentId = csDept.Id },
-                new Subject { SubjectName = "Computer Networks",            SubjectCode = "CSE301", DepartmentId = csDept.Id },
-                new Subject { SubjectName = "Software Engineering",         SubjectCode = "CSE302", DepartmentId = csDept.Id },
-                new Subject { SubjectName = "Artificial Intelligence",      SubjectCode = "CSE401", DepartmentId = csDept.Id },
-
-                // Electrical Engineering
-                new Subject { SubjectName = "Circuit Analysis",             SubjectCode = "EEE101", DepartmentId = eeDept.Id },
-                new Subject { SubjectName = "Digital Electronics",          SubjectCode = "EEE102", DepartmentId = eeDept.Id },
-                new Subject { SubjectName = "Signals & Systems",            SubjectCode = "EEE201", DepartmentId = eeDept.Id },
-                new Subject { SubjectName = "Electromagnetic Theory",       SubjectCode = "EEE202", DepartmentId = eeDept.Id },
-                new Subject { SubjectName = "Power Systems",                SubjectCode = "EEE301", DepartmentId = eeDept.Id },
-                new Subject { SubjectName = "Control Systems",              SubjectCode = "EEE302", DepartmentId = eeDept.Id },
-                new Subject { SubjectName = "Microprocessors",              SubjectCode = "EEE401", DepartmentId = eeDept.Id },
-
                 // Physics
-                new Subject { SubjectName = "Classical Mechanics",          SubjectCode = "PHY101", DepartmentId = phyDept.Id },
-                new Subject { SubjectName = "Thermodynamics",               SubjectCode = "PHY102", DepartmentId = phyDept.Id },
-                new Subject { SubjectName = "Electromagnetism",             SubjectCode = "PHY201", DepartmentId = phyDept.Id },
-                new Subject { SubjectName = "Quantum Mechanics",            SubjectCode = "PHY202", DepartmentId = phyDept.Id },
-                new Subject { SubjectName = "Optics",                       SubjectCode = "PHY301", DepartmentId = phyDept.Id },
-                new Subject { SubjectName = "Nuclear Physics",              SubjectCode = "PHY302", DepartmentId = phyDept.Id },
+                new Subject { SubjectName = "Mathematical Physics", SubjectCode = "PHY101", DepartmentId = physics.Id },
+                new Subject { SubjectName = "Waves", SubjectCode = "PHY102", DepartmentId = physics.Id },
+                new Subject { SubjectName = "Oscillations and Advanced Mechanics", SubjectCode = "PHY103", DepartmentId = physics.Id },
+                new Subject { SubjectName = "Practical Laboratory", SubjectCode = "PHY104", DepartmentId = physics.Id },
+                new Subject { SubjectName = "Optics", SubjectCode = "PHY105", DepartmentId = physics.Id },
+                new Subject { SubjectName = "Electricity and Magnetism", SubjectCode = "PHY106", DepartmentId = physics.Id },
 
-                // Mathematics
-                new Subject { SubjectName = "Calculus",                     SubjectCode = "MAT101", DepartmentId = mathDept.Id },
-                new Subject { SubjectName = "Linear Algebra",               SubjectCode = "MAT102", DepartmentId = mathDept.Id },
-                new Subject { SubjectName = "Differential Equations",       SubjectCode = "MAT201", DepartmentId = mathDept.Id },
-                new Subject { SubjectName = "Discrete Mathematics",         SubjectCode = "MAT202", DepartmentId = mathDept.Id },
-                new Subject { SubjectName = "Numerical Methods",            SubjectCode = "MAT301", DepartmentId = mathDept.Id },
-                new Subject { SubjectName = "Probability & Statistics",     SubjectCode = "MAT302", DepartmentId = mathDept.Id }
+                // EEE
+                new Subject { SubjectName = "Circuit Theory", SubjectCode = "EEE101", DepartmentId = eee.Id },
+                new Subject { SubjectName = "Analog Electronics", SubjectCode = "EEE102", DepartmentId = eee.Id },
+                new Subject { SubjectName = "Digital Signal Processing", SubjectCode = "EEE103", DepartmentId = eee.Id },
+                new Subject { SubjectName = "Electrical Machines", SubjectCode = "EEE104", DepartmentId = eee.Id },
+                new Subject { SubjectName = "Microprocessor", SubjectCode = "EEE105", DepartmentId = eee.Id },
+
+                // BBA
+                new Subject { SubjectName = "Principles of Management", SubjectCode = "BBA101", DepartmentId = bba.Id },
+                new Subject { SubjectName = "Financial Accounting", SubjectCode = "BBA102", DepartmentId = bba.Id },
+                new Subject { SubjectName = "Marketing Management", SubjectCode = "BBA103", DepartmentId = bba.Id },
+                new Subject { SubjectName = "Human Resource Management", SubjectCode = "BBA104", DepartmentId = bba.Id },
+                new Subject { SubjectName = "Corporate Finance", SubjectCode = "BBA105", DepartmentId = bba.Id },
+
+                // CSE
+                new Subject { SubjectName = "Introduction to Computer Science", SubjectCode = "CSE101", DepartmentId = cse.Id },
+                new Subject { SubjectName = "Structured Programming Language", SubjectCode = "CSE102", DepartmentId = cse.Id },
+                new Subject { SubjectName = "Data Structures", SubjectCode = "CSE103", DepartmentId = cse.Id },
+                new Subject { SubjectName = "Algorithms", SubjectCode = "CSE104", DepartmentId = cse.Id },
+                new Subject { SubjectName = "Database Management Systems", SubjectCode = "CSE105", DepartmentId = cse.Id },
+                new Subject { SubjectName = "Operating Systems", SubjectCode = "CSE106", DepartmentId = cse.Id },
+
+                // Math
+                new Subject { SubjectName = "Calculus and Analytical Geometry", SubjectCode = "MAT101", DepartmentId = math.Id },
+                new Subject { SubjectName = "Differential Equations", SubjectCode = "MAT102", DepartmentId = math.Id },
+                new Subject { SubjectName = "Linear Algebra", SubjectCode = "MAT103", DepartmentId = math.Id },
+                new Subject { SubjectName = "Complex Variables", SubjectCode = "MAT104", DepartmentId = math.Id },
+                new Subject { SubjectName = "Fourier Analysis", SubjectCode = "MAT105", DepartmentId = math.Id },
+                new Subject { SubjectName = "Probability and Statistics", SubjectCode = "MAT106", DepartmentId = math.Id }
             );
             context.SaveChanges();
-        }
 
-        // Seed Admin User
-        if (!context.Users.Any(u => u.UserName == "admin"))
-        {
-            var adminRole = context.Roles.First(r => r.RoleName == "Admin");
-            context.Users.Add(new User
-            {
-                UserName = "admin",
-                Email = "admin@system.com",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"),
-                Address = "System Admin",
-                RoleId = adminRole.Id,
-                CreatedAt = DateTime.Now
-            });
-            context.SaveChanges();
-        }
-
-        // Seed Teacher User & Profile
-        if (!context.Users.Any(u => u.UserName == "teacher"))
-        {
-            var csDept = context.Departments.First(d => d.DepartmentName == "Computer Science");
+            // Seed Teacher & Student Users & Profiles
             var teacherRole = context.Roles.First(r => r.RoleName == "Teacher");
-
-            var teacherUser = new User
-            {
-                UserName = "teacher",
-                Email = "teacher@system.com",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("teacher123"),
-                Address = "CS Department Office 101",
-                RoleId = teacherRole.Id,
-                CreatedAt = DateTime.Now
-            };
-            context.Users.Add(teacherUser);
-            context.SaveChanges();
-
-            var teacherProfile = new Teacher
-            {
-                Name = "Dr. John Doe",
-                Email = "teacher@system.com",
-                Phone = "01711122233",
-                Address = "CS Department Office 101",
-                DepartmentId = csDept.Id
-            };
-            context.Teachers.Add(teacherProfile);
-            context.SaveChanges();
-        }
-
-        // Seed Student Users & Profiles
-        if (!context.Users.Any(u => u.UserName == "student1"))
-        {
-            var csDept = context.Departments.First(d => d.DepartmentName == "Computer Science");
             var studentRole = context.Roles.First(r => r.RoleName == "Student");
 
-            var studentUser1 = new User
+            var depts = new List<(DepartmentModel Dept, string Prefix)>
             {
-                UserName = "student1",
-                Email = "student1@system.com",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("student123"),
-                Address = "Dormitory A, Room 10",
-                RoleId = studentRole.Id,
-                CreatedAt = DateTime.Now
+                (cse, "cse"), (eee, "eee"), (physics, "phy"), (math, "math"), (bba, "bba")
             };
-            var studentUser2 = new User
-            {
-                UserName = "student2",
-                Email = "student2@system.com",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("student123"),
-                Address = "Dormitory A, Room 11",
-                RoleId = studentRole.Id,
-                CreatedAt = DateTime.Now
-            };
-            var studentUser3 = new User
-            {
-                UserName = "student3",
-                Email = "student3@system.com",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("student123"),
-                Address = "Dormitory B, Room 22",
-                RoleId = studentRole.Id,
-                CreatedAt = DateTime.Now
-            };
-            context.Users.AddRange(studentUser1, studentUser2, studentUser3);
-            context.SaveChanges();
 
-            var studentProfile1 = new StudentModel
+            foreach (var (dept, prefix) in depts)
             {
-                Name = "Alice Smith",
-                Email = "student1@system.com",
-                Age = 20,
-                Address = "Dormitory A, Room 10",
-                DepartmentId = csDept.Id
-            };
-            var studentProfile2 = new StudentModel
-            {
-                Name = "Bob Johnson",
-                Email = "student2@system.com",
-                Age = 21,
-                Address = "Dormitory A, Room 11",
-                DepartmentId = csDept.Id
-            };
-            var studentProfile3 = new StudentModel
-            {
-                Name = "Charlie Brown",
-                Email = "student3@system.com",
-                Age = 22,
-                Address = "Dormitory B, Room 22",
-                DepartmentId = csDept.Id
-            };
-            context.Students.AddRange(studentProfile1, studentProfile2, studentProfile3);
-            context.SaveChanges();
+                var teacherUser = new User
+                {
+                    UserName = $"{prefix}_teacher",
+                    Email = $"{prefix}_teacher@system.com",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("teacher123"),
+                    Address = $"{dept.DepartmentName} Dept Office",
+                    RoleId = teacherRole.Id,
+                    CreatedAt = DateTime.Now
+                };
+                context.Users.Add(teacherUser);
+                context.SaveChanges();
+
+                var teacherProfile = new Teacher
+                {
+                    Name = $"Dr. {dept.DepartmentName} Teacher",
+                    Email = $"{prefix}_teacher@system.com",
+                    Phone = "01700000000",
+                    Address = $"{dept.DepartmentName} Dept Office",
+                    DepartmentId = dept.Id
+                };
+                context.Teachers.Add(teacherProfile);
+                context.SaveChanges();
+
+                // Seed Students
+                var studentUser = new User
+                {
+                    UserName = $"{prefix}_student",
+                    Email = $"{prefix}_student@system.com",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("student123"),
+                    Address = $"{dept.DepartmentName} Student Dorm",
+                    RoleId = studentRole.Id,
+                    CreatedAt = DateTime.Now
+                };
+                context.Users.Add(studentUser);
+                context.SaveChanges();
+
+                var studentProfile = new StudentModel
+                {
+                    Name = $"Student {dept.DepartmentName}",
+                    Email = $"{prefix}_student@system.com",
+                    Age = 21,
+                    Address = $"{dept.DepartmentName} Student Dorm",
+                    DepartmentId = dept.Id
+                };
+                context.Students.Add(studentProfile);
+                context.SaveChanges();
+            }
         }
     }
     catch (Exception ex)

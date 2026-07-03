@@ -425,7 +425,7 @@ namespace finalSE.Controllers
             var finalMarks = await _context.StudentMarks
                 .Include(sm => sm.Student)
                 .Include(sm => sm.Subject)
-                .Where(sm => sm.SubjectId == subjectId)
+                .Where(sm => sm.SubjectId == subjectId && sm.Student.DepartmentId == teacher.DepartmentId)
                 .OrderBy(sm => sm.Student.Name)
                 .ToListAsync();
 
