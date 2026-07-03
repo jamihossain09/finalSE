@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using finalSE.Models;
 using finalSE.Repository.Interface;
 using System.Collections.Generic;
@@ -47,6 +47,13 @@ namespace finalSE.Repository.Application
             var totalCount = await query.CountAsync();
             var students = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
             return (students, totalCount);
+        }
+
+        public async Task<StudentModel?> GetByEmailAsync(string email)
+        {
+            return await _context.Students
+                .Include(s => s.Department)
+                .FirstOrDefaultAsync(s => s.Email == email);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using finalSE.Models;
+using finalSE.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -12,5 +12,6 @@ namespace finalSE.Repository.Interface
         void Update(StudentModel student);
         void Delete(StudentModel student);
         Task<(IEnumerable<StudentModel> Students, int TotalCount)> GetPagedAsync(int page, int pageSize);
+        Task<StudentModel?> GetByEmailAsync(string email);
     }
 }
