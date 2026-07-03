@@ -95,8 +95,8 @@ using (var scope = app.Services.CreateScope())
             context.SaveChanges();
         }
 
-        // Seed Departments & Subjects (Check if CSE/BBA exists, if not, reset and seed everything cleanly)
-        if (!context.Departments.Any(d => d.DepartmentName == "CSE" || d.DepartmentName == "BBA"))
+        // Seed Departments & Subjects (Check if Mathematics exists and correct Physics subject is present, if not, reset and seed everything cleanly)
+        if (!context.Departments.Any(d => d.DepartmentName == "Mathematics") || !context.Subjects.Any(s => s.SubjectName == "Waves, Oscillations and Advanced Mechanics"))
         {
             // Clear existing academic data first to avoid FK conflicts and start fresh
             context.StudentMarks.ExecuteDelete();
@@ -125,7 +125,7 @@ using (var scope = app.Services.CreateScope())
             var eee = new DepartmentModel { DepartmentName = "EEE" };
             var bba = new DepartmentModel { DepartmentName = "BBA" };
             var cse = new DepartmentModel { DepartmentName = "CSE" };
-            var math = new DepartmentModel { DepartmentName = "Math" };
+            var math = new DepartmentModel { DepartmentName = "Mathematics" };
 
             context.Departments.AddRange(physics, eee, bba, cse, math);
             context.SaveChanges();
@@ -134,11 +134,10 @@ using (var scope = app.Services.CreateScope())
             context.Subjects.AddRange(
                 // Physics
                 new Subject { SubjectName = "Mathematical Physics", SubjectCode = "PHY101", DepartmentId = physics.Id },
-                new Subject { SubjectName = "Waves", SubjectCode = "PHY102", DepartmentId = physics.Id },
-                new Subject { SubjectName = "Oscillations and Advanced Mechanics", SubjectCode = "PHY103", DepartmentId = physics.Id },
-                new Subject { SubjectName = "Practical Laboratory", SubjectCode = "PHY104", DepartmentId = physics.Id },
-                new Subject { SubjectName = "Optics", SubjectCode = "PHY105", DepartmentId = physics.Id },
-                new Subject { SubjectName = "Electricity and Magnetism", SubjectCode = "PHY106", DepartmentId = physics.Id },
+                new Subject { SubjectName = "Waves, Oscillations and Advanced Mechanics", SubjectCode = "PHY102", DepartmentId = physics.Id },
+                new Subject { SubjectName = "Practical Laboratory", SubjectCode = "PHY103", DepartmentId = physics.Id },
+                new Subject { SubjectName = "Optics", SubjectCode = "PHY104", DepartmentId = physics.Id },
+                new Subject { SubjectName = "Electricity and Magnetism", SubjectCode = "PHY105", DepartmentId = physics.Id },
 
                 // EEE
                 new Subject { SubjectName = "Circuit Theory", SubjectCode = "EEE101", DepartmentId = eee.Id },
@@ -162,7 +161,7 @@ using (var scope = app.Services.CreateScope())
                 new Subject { SubjectName = "Database Management Systems", SubjectCode = "CSE105", DepartmentId = cse.Id },
                 new Subject { SubjectName = "Operating Systems", SubjectCode = "CSE106", DepartmentId = cse.Id },
 
-                // Math
+                // Mathematics
                 new Subject { SubjectName = "Calculus and Analytical Geometry", SubjectCode = "MAT101", DepartmentId = math.Id },
                 new Subject { SubjectName = "Differential Equations", SubjectCode = "MAT102", DepartmentId = math.Id },
                 new Subject { SubjectName = "Linear Algebra", SubjectCode = "MAT103", DepartmentId = math.Id },
