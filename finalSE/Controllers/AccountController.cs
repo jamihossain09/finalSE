@@ -69,8 +69,30 @@ namespace finalSE.Controllers
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Role, roleName)
             };
+
+            // Add profile-specific claims so controllers can do direct ID lookups
+            // instead of fragile email matching
+            if (roleName == "Teacher")
+            {
+                var teacher = await _teacherService.GetByEmailAsync(user.Email);
+                if (teacher != null)
+                {
+                    claims.Add(new Claim("TeacherId", teacher.Id.ToString()));
+                    claims.Add(new Claim("DepartmentId", teacher.DepartmentId.ToString()));
+                }
+            }
+            else if (roleName == "Student")
+            {
+                var student = await _studentService.GetByEmailAsync(user.Email);
+                if (student != null)
+                {
+                    claims.Add(new Claim("StudentId", student.Id.ToString()));
+                    claims.Add(new Claim("DepartmentId", student.DepartmentId.ToString()));
+                }
+            }
 
             var identity = new ClaimsIdentity(
                 claims,
