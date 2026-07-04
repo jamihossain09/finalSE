@@ -14,7 +14,8 @@
                     <span class="badge bg-primary px-3 py-2 fs-7 fw-semibold mb-3" style="border-radius: 8px;">
                         <i class="fas fa-graduation-cap me-1"></i> Student Portal
                     </span>
-                    <h1 class="fw-bold display-5 mb-2">Welcome to @(student?.Name ?? "User")! Department: @(student?.Department?.DepartmentName ?? "N/A")</h1>
+                    <h1 class="fw-bold display-5 mb-2">Welcome to @(student?.Name ?? "User")!</h1>
+                    <h4 class="fw-semibold text-slate-300 mb-3">Department: @(student?.Department?.DepartmentName ?? "N/A")</h4>
                     <p class="fs-5 text-slate-300 mb-0">Student Profile &bull; Age: @student?.Age &bull; @student?.Email</p>
                 </div>
             </div>
