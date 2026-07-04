@@ -519,3 +519,84 @@ Body:
             </div>
 -------------------------------------------------
 
+[EMAIL LOG - 7/3/2026 7:08:00 PM]
+To: yaariaanromen@gmail.com
+Subject: Invitation Link
+Body: 
+                <h2>You're Invited!</h2>
+                <p>Click below to join:</p>
+                <a href='https://localhost:7030/Account/RegisterWithToken?token=1073a6e6-07a0-4431-a54a-13dd61199627'>Register Here</a>
+                <p>This link expires in 24 hours.</p>
+            
+-------------------------------------------------
+
+[EMAIL LOG - 7/3/2026 7:09:20 PM]
+To: yaariaanromen@gmail.com
+Subject: Invitation Verification OTP
+Body: 
+            <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;'>
+                <h2 style='color: #4f46e5; text-align: center;'>Email Verification</h2>
+                <p>Hello,</p>
+                <p>You are registering using an invitation link. Your verification OTP code is:</p>
+                <div style='background-color: #f8f9fa; padding: 15px; text-align: center; font-size: 28px; font-weight: bold; letter-spacing: 5px; color: #4f46e5; border-radius: 4px; margin: 20px 0;'>
+                    560317
+                </div>
+                <p>This code will expire in 10 minutes.</p>
+                <p style='color: #999; font-size: 12px; text-align: center; margin-top: 30px;'>If you did not make this request, please ignore this email.</p>
+            </div>
+-------------------------------------------------
+
+[EMAIL LOG - 7/3/2026 7:10:10 PM]
+To: yaariaanromen@gmail.com
+Subject: Invitation Link
+Body: 
+                <h2>You're Invited!</h2>
+                <p>Click below to join:</p>
+                <a href='https://localhost:7030/Account/RegisterWithToken?token=2e31daff-0070-4870-8e58-11690113bf70'>Register Here</a>
+                <p>This link expires in 24 hours.</p>
+            
+-------------------------------------------------
+
+[EMAIL LOG - 7/3/2026 7:11:26 PM]
+To: yaariaanromen@gmail.com
+Subject: Invitation Verification OTP
+Body: 
+            <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;'>
+                <h2 style='color: #4f46e5; text-align: center;'>Email Verification</h2>
+                <p>Hello,</p>
+                <p>You are registering using an invitation link. Your verification OTP code is:</p>
+                <div style='background-color: #f8f9fa; padding: 15px; text-align: center; font-size: 28px; font-weight: bold; letter-spacing: 5px; color: #4f46e5; border-radius: 4px; margin: 20px 0;'>
+                    360019
+                </div>
+                <p>This code will expire in 10 minutes.</p>
+                <p style='color: #999; font-size: 12px; text-align: center; margin-top: 30px;'>If you did not make this request, please ignore this email.</p>
+            </div>
+-------------------------------------------------
+
+[EMAIL LOG - 7/3/2026 7:12:45 PM]
+To: yaariaanromen@gmail.com
+Subject: Invitation Link
+Body: 
+                <h2>You're Invited!</h2>
+                <p>Click below to join:</p>
+                <a href='https://localhost:7030/Account/RegisterWithToken?token=b3e4a9c9-c09f-4f27-8b5e-120634564a49'>Register Here</a>
+                <p>This link expires in 24 hours.</p>
+            
+-------------------------------------------------
+
+[EMAIL LOG - 7/3/2026 7:14:04 PM]
+To: yaariaanromen@gmail.com
+Subject: Invitation Verification OTP
+Body: 
+            <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;'>
+                <h2 style='color: #4f46e5; text-align: center;'>Email Verification</h2>
+                <p>Hello,</p>
+                <p>You are registering using an invitation link. Your verification OTP code is:</p>
+                <div style='background-color: #f8f9fa; padding: 15px; text-align: center; font-size: 28px; font-weight: bold; letter-spacing: 5px; color: #4f46e5; border-radius: 4px; margin: 20px 0;'>
+                    417502
+                </div>
+                <p>This code will expire in 10 minutes.</p>
+                <p style='color: #999; font-size: 12px; text-align: center; margin-top: 30px;'>If you did not make this request, please ignore this email.</p>
+            </div>
+-------------------------------------------------
+

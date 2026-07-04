@@ -27,6 +27,14 @@ namespace finalSE.Controllers
         // Helper method to get the current teacher profile based on logged-in user email
         private async Task<Teacher?> GetCurrentTeacherAsync()
         {
+            var teacherIdClaim = User.FindFirstValue("TeacherId");
+            if (!string.IsNullOrEmpty(teacherIdClaim) && int.TryParse(teacherIdClaim, out int teacherId))
+            {
+                return await _context.Teachers
+                    .Include(t => t.Department)
+                    .FirstOrDefaultAsync(t => t.Id == teacherId);
+            }
+
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userIdString)) return null;
 

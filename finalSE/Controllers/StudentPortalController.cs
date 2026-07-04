@@ -22,6 +22,14 @@ namespace finalSE.Controllers
         // Helper method to get current Student profile
         private async Task<StudentModel?> GetCurrentStudentAsync()
         {
+            var studentIdClaim = User.FindFirstValue("StudentId");
+            if (!string.IsNullOrEmpty(studentIdClaim) && int.TryParse(studentIdClaim, out int studentId))
+            {
+                return await _context.Students
+                    .Include(s => s.Department)
+                    .FirstOrDefaultAsync(s => s.Id == studentId);
+            }
+
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userIdString)) return null;
 

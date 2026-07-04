@@ -95,8 +95,8 @@ using (var scope = app.Services.CreateScope())
             context.SaveChanges();
         }
 
-        // Seed Departments & Subjects (Check if Mathematics exists and correct Physics subject is present, if not, reset and seed everything cleanly)
-        if (!context.Departments.Any(d => d.DepartmentName == "Mathematics") || !context.Subjects.Any(s => s.SubjectName == "Waves, Oscillations and Advanced Mechanics"))
+        // Seed Departments & Subjects (Check if Math exists and correct Physics subject is present, if not, reset and seed everything cleanly)
+        if (!context.Departments.Any(d => d.DepartmentName == "Math") || !context.Subjects.Any(s => s.SubjectName == "Waves, Oscillations and Advanced Mechanics"))
         {
             // Clear existing academic data first to avoid FK conflicts and start fresh
             context.StudentMarks.ExecuteDelete();
@@ -125,7 +125,7 @@ using (var scope = app.Services.CreateScope())
             var eee = new DepartmentModel { DepartmentName = "EEE" };
             var bba = new DepartmentModel { DepartmentName = "BBA" };
             var cse = new DepartmentModel { DepartmentName = "CSE" };
-            var math = new DepartmentModel { DepartmentName = "Mathematics" };
+            var math = new DepartmentModel { DepartmentName = "Math" };
 
             context.Departments.AddRange(physics, eee, bba, cse, math);
             context.SaveChanges();

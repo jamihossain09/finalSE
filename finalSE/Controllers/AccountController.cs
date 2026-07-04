@@ -77,7 +77,8 @@ namespace finalSE.Controllers
             // instead of fragile email matching
             if (roleName == "Teacher")
             {
-                var teacher = await _teacherService.GetByEmailAsync(user.Email);
+                var teachers = await _teacherService.GetAllAsync();
+                var teacher = teachers.FirstOrDefault(t => t.Email == user.Email);
                 if (teacher != null)
                 {
                     claims.Add(new Claim("TeacherId", teacher.Id.ToString()));
@@ -86,7 +87,8 @@ namespace finalSE.Controllers
             }
             else if (roleName == "Student")
             {
-                var student = await _studentService.GetByEmailAsync(user.Email);
+                var students = await _studentService.GetAllAsync();
+                var student = students.FirstOrDefault(s => s.Email == user.Email);
                 if (student != null)
                 {
                     claims.Add(new Claim("StudentId", student.Id.ToString()));
