@@ -43,35 +43,18 @@ namespace finalSE.Controllers
             return View(student);
         }
 
-        // CREATE
+        // CREATE (DISABLED - USE INVITATIONS)
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create()
+        public IActionResult Create()
         {
-            ViewBag.Departments = new SelectList(
-                await _departmentService.GetAllAsync(),
-                "Id",
-                "DepartmentName"
-            );
-
-            return View();
+            return Content("❌ Direct student creation is disabled. Please use the invitation system instead.");
         }
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create(StudentModel student)
+        public IActionResult Create(StudentModel student)
         {
-            if (!ModelState.IsValid)
-            {
-                ViewBag.Departments = new SelectList(
-                    await _departmentService.GetAllAsync(),
-                    "Id",
-                    "DepartmentName"
-                );
-                return View(student);
-            }
-
-            await _studentService.CreateAsync(student);
-            return RedirectToAction(nameof(Index));
+            return Content("❌ Direct student creation is disabled. Please use the invitation system instead.");
         }
 
         // EDIT

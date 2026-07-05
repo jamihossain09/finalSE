@@ -72,6 +72,36 @@ namespace finalSE.Controllers
             return View();
         }
 
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> MigrateAttendanceStatus()
+        {
+            var records = await _context.StudentMarks.ToListAsync();
+            int updatedCount = 0;
+            foreach (var record in records)
+            {
+                double attPercent = record.Attendance * 10;
+                string newStatus = attPercent >= 70 ? "Collegiate" 
+                                 : attPercent >= 60 ? "Non-Collegiate" 
+                                 : "Dis-collegiate";
+                
+                if (record.AttendanceStatus != newStatus)
+                {
+                    record.AttendanceStatus = newStatus;
+                    if (newStatus == "Dis-collegiate")
+                    {
+                        record.LetterGrade = "F";
+                        record.GradePoint = 0.0;
+                    }
+                    updatedCount++;
+                }
+            }
+            if (updatedCount > 0)
+            {
+                await _context.SaveChangesAsync();
+            }
+            return Content($"Migrated {updatedCount} records successfully.");
+        }
+
         public IActionResult Privacy()
         {
             return View();

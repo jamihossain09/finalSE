@@ -1,14 +1,9 @@
-﻿@model IEnumerable<Teacher>
+@model IEnumerable<Teacher>
 
 <div class="container mt-4">
 
     <div class="d-flex justify-content-between mb-3">
         <h2>Teacher List</h2>
-
-        @if (User.IsInRole("Admin"))
-        {
-            <a asp-action="Create" class="btn btn-primary">Create Teacher</a>
-        }
     </div>
 
     <!-- TABLE GRID -->

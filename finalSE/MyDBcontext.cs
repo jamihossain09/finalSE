@@ -35,6 +35,8 @@ public class MyDBContext : DbContext
 
     public DbSet<StudentMark> StudentMarks { get; set; }
 
+    public DbSet<CourseAssignment> CourseAssignments { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -66,5 +68,17 @@ public class MyDBContext : DbContext
         modelBuilder.Entity<StudentMark>()
             .HasIndex(sm => new { sm.StudentId, sm.SubjectId })
             .IsUnique();
+
+        modelBuilder.Entity<CourseAssignment>()
+            .HasOne(ca => ca.Subject)
+            .WithMany()
+            .HasForeignKey(ca => ca.SubjectId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<CourseAssignment>()
+            .HasOne(ca => ca.Teacher)
+            .WithMany()
+            .HasForeignKey(ca => ca.TeacherId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

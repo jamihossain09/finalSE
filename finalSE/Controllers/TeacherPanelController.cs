@@ -363,9 +363,15 @@ namespace finalSE.Controllers
                 return Content("❌ Teacher profile not found. Please contact the administrator.");
             }
 
-            // Get all subjects in the teacher's department
+            // Get assigned subject IDs for this teacher
+            var assignedSubjectIds = await _context.CourseAssignments
+                .Where(ca => ca.TeacherId == teacher.Id)
+                .Select(ca => ca.SubjectId)
+                .ToListAsync();
+
+            // Get all subjects in the teacher's department that are assigned to the teacher
             var subjects = await _context.Subjects
-                .Where(s => s.DepartmentId == teacher.DepartmentId)
+                .Where(s => assignedSubjectIds.Contains(s.Id))
                 .OrderBy(s => s.SubjectCode)
                 .ToListAsync();
 
@@ -379,11 +385,11 @@ namespace finalSE.Controllers
                 return View(new List<StudentMark>());
             }
 
-            // Verify the subject belongs to the teacher's department
+            // Verify the subject is assigned to this teacher
             var subject = subjects.FirstOrDefault(s => s.Id == subjectId);
             if (subject == null)
             {
-                TempData["ErrorMessage"] = "Invalid subject selected.";
+                TempData["ErrorMessage"] = "Invalid or unassigned subject selected.";
                 return RedirectToAction(nameof(StudentMarks));
             }
 
@@ -418,6 +424,7 @@ namespace finalSE.Controllers
                         LetterGrade = "F",
                         GradePoint  = 0.00,
                         Remarks     = "Fail",
+                        AttendanceStatus = "Dis-collegiate",
                         IsPublished = false,
                         LastUpdated = DateTime.Now
                     };
@@ -447,9 +454,9 @@ namespace finalSE.Controllers
             var teacher = await GetCurrentTeacherAsync();
             if (teacher == null) return Json(new { success = false, message = "Teacher profile not found." });
 
-            // Verify subject belongs to teacher's department
-            var subject = await _context.Subjects.FirstOrDefaultAsync(s => s.Id == subjectId && s.DepartmentId == teacher.DepartmentId);
-            if (subject == null) return Json(new { success = false, message = "Subject not found or not in your department." });
+            // Verify subject belongs to teacher's department and is assigned to the teacher
+            var isAssigned = await _context.CourseAssignments.AnyAsync(ca => ca.SubjectId == subjectId && ca.TeacherId == teacher.Id);
+            if (!isAssigned) return Json(new { success = false, message = "Subject is not assigned to you." });
 
             // Verify student belongs to teacher's department
             var student = await _context.Students.FindAsync(studentId);
@@ -476,10 +483,11 @@ namespace finalSE.Controllers
             mark.FinalExam  = finalExam;
             mark.Total      = total;
 
-            var gradeInfo       = CalculateGrade(total);
+            var gradeInfo       = CalculateGrade(total, attendance);
             mark.LetterGrade    = gradeInfo.LetterGrade;
             mark.GradePoint     = gradeInfo.GradePoint;
             mark.Remarks        = gradeInfo.Remarks;
+            mark.AttendanceStatus = gradeInfo.AttendanceStatus;
             mark.LastUpdated    = DateTime.Now;
 
             await _context.SaveChangesAsync();
@@ -490,7 +498,8 @@ namespace finalSE.Controllers
                 total       = total,
                 letterGrade = gradeInfo.LetterGrade,
                 gradePoint  = gradeInfo.GradePoint.ToString("0.00"),
-                remarks     = gradeInfo.Remarks
+                remarks     = gradeInfo.Remarks,
+                attendanceStatus = gradeInfo.AttendanceStatus
             });
         }
 
@@ -501,10 +510,10 @@ namespace finalSE.Controllers
             var teacher = await GetCurrentTeacherAsync();
             if (teacher == null) return Json(new { success = false, message = "Teacher profile not found." });
 
-            // Verify the subject belongs to the teacher's own department
-            var subject = await _context.Subjects.FirstOrDefaultAsync(s => s.Id == subjectId && s.DepartmentId == teacher.DepartmentId);
-            if (subject == null)
-                return Json(new { success = false, message = "You are not authorized to publish results for a subject outside your department." });
+            // Verify the subject is assigned to this teacher
+            var isAssigned = await _context.CourseAssignments.AnyAsync(ca => ca.SubjectId == subjectId && ca.TeacherId == teacher.Id);
+            if (!isAssigned)
+                return Json(new { success = false, message = "You are not authorized to publish results for a subject not assigned to you." });
 
             var mark = await _context.StudentMarks
                 .Include(m => m.Student)
@@ -524,6 +533,11 @@ namespace finalSE.Controllers
         {
             var teacher = await GetCurrentTeacherAsync();
             if (teacher == null) return Json(new { success = false, message = "Teacher profile not found." });
+
+            // Verify the subject is assigned to this teacher
+            var isAssigned = await _context.CourseAssignments.AnyAsync(ca => ca.SubjectId == subjectId && ca.TeacherId == teacher.Id);
+            if (!isAssigned)
+                return Json(new { success = false, message = "You are not authorized for this subject." });
 
             var student = await _context.Students
                 .Include(s => s.Department)
@@ -554,6 +568,7 @@ namespace finalSE.Controllers
                     letterGrade = mark.LetterGrade,
                     gradePoint  = mark.GradePoint.ToString("0.00"),
                     remarks     = mark.Remarks,
+                    attendanceStatus = mark.AttendanceStatus,
                     isPublished = mark.IsPublished,
                     lastUpdated = mark.LastUpdated.ToString("yyyy-MM-dd HH:mm")
                 } : null
@@ -567,8 +582,12 @@ namespace finalSE.Controllers
             var teacher = await GetCurrentTeacherAsync();
             if (teacher == null) return NotFound("Teacher profile not found.");
 
+            // Verify the subject is assigned to this teacher
+            var isAssigned = await _context.CourseAssignments.AnyAsync(ca => ca.SubjectId == subjectId && ca.TeacherId == teacher.Id);
+            if (!isAssigned) return NotFound("Subject not found or not assigned to you.");
+
             var subject = await _context.Subjects.FirstOrDefaultAsync(s => s.Id == subjectId && s.DepartmentId == teacher.DepartmentId);
-            if (subject == null) return NotFound("Subject not found or not in your department.");
+            if (subject == null) return NotFound("Subject not found.");
 
             var students = await _context.Students
                 .Where(s => s.DepartmentId == teacher.DepartmentId)
@@ -603,6 +622,10 @@ namespace finalSE.Controllers
         {
             var teacher = await GetCurrentTeacherAsync();
             if (teacher == null) return NotFound("Teacher profile not found.");
+
+            // Verify the subject is assigned to this teacher
+            var isAssigned = await _context.CourseAssignments.AnyAsync(ca => ca.SubjectId == subjectId && ca.TeacherId == teacher.Id);
+            if (!isAssigned) return NotFound("Subject not found or not assigned to you.");
 
             var subject = await _context.Subjects.FirstOrDefaultAsync(s => s.Id == subjectId && s.DepartmentId == teacher.DepartmentId);
             if (subject == null) return NotFound("Subject not found.");
@@ -754,7 +777,7 @@ namespace finalSE.Controllers
             if (finalExam < 0 || finalExam > 40) return (false, $"Final exam marks for {student.Name} must be between 0 and 40.");
 
             var total = attendance + classTest + midTerm + finalExam;
-            var gradeInfo = CalculateGrade(total);
+            var gradeInfo = CalculateGrade(total, attendance);
 
             var mark = await _context.StudentMarks.FirstOrDefaultAsync(m => m.StudentId == studentId && m.SubjectId == subjectId);
             if (mark == null)
@@ -776,6 +799,7 @@ namespace finalSE.Controllers
             mark.LetterGrade = gradeInfo.LetterGrade;
             mark.GradePoint = gradeInfo.GradePoint;
             mark.Remarks = gradeInfo.Remarks;
+            mark.AttendanceStatus = gradeInfo.AttendanceStatus;
             mark.IsPublished = true; // Automatically publish results
             mark.LastUpdated = DateTime.Now;
 
@@ -783,18 +807,38 @@ namespace finalSE.Controllers
             return (true, "");
         }
 
-        private (string LetterGrade, double GradePoint, string Remarks) CalculateGrade(double total)
+        private (string LetterGrade, double GradePoint, string Remarks, string AttendanceStatus) CalculateGrade(double total, double attendance)
         {
-            if (total >= 80) return ("A+", 4.00, "Excellent");
-            if (total >= 75) return ("A",  3.75, "Very Good");
-            if (total >= 70) return ("A-", 3.50, "Very Good");
-            if (total >= 65) return ("B+", 3.25, "Good");
-            if (total >= 60) return ("B",  3.00, "Good");
-            if (total >= 55) return ("B-", 2.75, "Satisfactory");
-            if (total >= 50) return ("C+", 2.50, "Satisfactory");
-            if (total >= 45) return ("C",  2.25, "Pass");
-            if (total >= 40) return ("D",  2.00, "Pass");
-            return ("F", 0.00, "Fail");
+            string attendanceStatus;
+            double attendancePercentage = attendance * 10.0;
+            if (attendancePercentage >= 70.0)
+            {
+                attendanceStatus = "Collegiate";
+            }
+            else if (attendancePercentage >= 60.0)
+            {
+                attendanceStatus = "Non-Collegiate";
+            }
+            else
+            {
+                attendanceStatus = "Dis-collegiate";
+            }
+
+            if (attendanceStatus == "Dis-collegiate")
+            {
+                return ("F", 0.00, "Fail (Dis-collegiate)", attendanceStatus);
+            }
+
+            if (total >= 80) return ("A+", 4.00, "Excellent", attendanceStatus);
+            if (total >= 75) return ("A",  3.75, "Very Good", attendanceStatus);
+            if (total >= 70) return ("A-", 3.50, "Very Good", attendanceStatus);
+            if (total >= 65) return ("B+", 3.25, "Good", attendanceStatus);
+            if (total >= 60) return ("B",  3.00, "Good", attendanceStatus);
+            if (total >= 55) return ("B-", 2.75, "Satisfactory", attendanceStatus);
+            if (total >= 50) return ("C+", 2.50, "Satisfactory", attendanceStatus);
+            if (total >= 45) return ("C",  2.25, "Pass", attendanceStatus);
+            if (total >= 40) return ("D",  2.00, "Pass", attendanceStatus);
+            return ("F", 0.00, "Fail", attendanceStatus);
         }
     }
 }

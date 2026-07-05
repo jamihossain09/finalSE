@@ -40,24 +40,18 @@ namespace finalSE.Controllers
             return View(teacher);
         }
 
+        // CREATE (DISABLED - USE INVITATIONS)
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create()
+        public IActionResult Create()
         {
-            ViewBag.Departments = new SelectList(
-                await _departmentService.GetAllAsync(),
-                "Id",
-                "DepartmentName"
-            );
-
-            return View();
+            return Content("❌ Direct teacher creation is disabled. Please use the invitation system instead.");
         }
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create(Teacher teacher)
+        public IActionResult Create(Teacher teacher)
         {
-            await _teacherService.CreateAsync(teacher);
-            return RedirectToAction(nameof(Index));
+            return Content("❌ Direct teacher creation is disabled. Please use the invitation system instead.");
         }
 
         [Authorize(Roles = "Admin")]

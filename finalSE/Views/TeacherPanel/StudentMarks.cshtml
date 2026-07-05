@@ -169,6 +169,7 @@
                                 <th style="width:100px;">Mid-Term<br><span class="text-lowercase text-muted fw-normal">(Max 30)</span></th>
                                 <th style="width:100px;">Final Exam<br><span class="text-lowercase text-muted fw-normal">(Max 40)</span></th>
                                 <th style="width:80px;" class="text-center">Total</th>
+                                <th style="width:120px;" class="text-center">Attendance Status</th>
                                 <th style="width:80px;" class="text-center">Grade</th>
                                 <th style="width:120px;" class="text-center">Status</th>
                                 <th class="pe-4 text-end">Actions</th>
@@ -178,7 +179,7 @@
                             @if (!Model.Any())
                             {
                                 <tr>
-                                    <td colspan="9" class="text-center py-5 text-muted">
+                                    <td colspan="10" class="text-center py-5 text-muted">
                                         <i class="fas fa-user-friends fa-3x mb-3 text-light"></i>
                                         <p class="mb-0 fs-5">No students found in your department.</p>
                                         <p class="small text-muted">Please contact the Administrator to enroll students.</p>
@@ -220,6 +221,20 @@
                                         </td>
                                         <td class="text-center fw-bold total-text text-primary">
                                             @item.Total
+                                        </td>
+                                        <td class="text-center attendance-status-text">
+                                            @if (item.AttendanceStatus == "Collegiate")
+                                            {
+                                                <span class="badge bg-success-subtle text-success px-2.5 py-1.5 status-badge" style="border-radius:6px;">Collegiate</span>
+                                            }
+                                            else if (item.AttendanceStatus == "Non-Collegiate")
+                                            {
+                                                <span class="badge bg-warning-subtle text-warning px-2.5 py-1.5 status-badge" style="border-radius:6px;">Non-Collegiate</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger-subtle text-danger px-2.5 py-1.5 status-badge" style="border-radius:6px;">Dis-collegiate</span>
+                                            }
                                         </td>
                                         <td class="text-center">
                                             <span class="badge bg-secondary grade-badge px-2.5 py-1.5 fs-7">@item.LetterGrade</span>
@@ -349,6 +364,12 @@
                                         </div>
                                     </div>
                                     <div class="col-12 mt-2">
+                                        <div class="p-2.5 rounded-3 d-flex justify-content-between align-items-center mb-2" id="mAttendanceStatusBlock" style="background:#f8fafc;">
+                                            <span class="text-muted small"><i class="fas fa-user-check me-1 text-muted"></i>Collegiate Status:</span>
+                                            <strong id="mAttendanceStatus" class="fs-7">-</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 mt-1">
                                         <div class="p-2.5 rounded-3 d-flex justify-content-between align-items-center" id="mStatusBlock">
                                             <span class="text-muted small"><i class="fas fa-info-circle me-1"></i>Remarks: <strong id="mRemarks">-</strong></span>
                                             <span id="mPublishBadge">-</span>
@@ -479,6 +500,17 @@
                     if (response.success) {
                         row.find('.total-text').text(response.total.toFixed(1));
                         updateGradeBadgeColor(studentId, response.letterGrade);
+                        
+                        var statusBadge = '';
+                        if (response.attendanceStatus === 'Collegiate') {
+                            statusBadge = '<span class="badge bg-success-subtle text-success px-2.5 py-1.5 status-badge" style="border-radius:6px;">Collegiate</span>';
+                        } else if (response.attendanceStatus === 'Non-Collegiate') {
+                            statusBadge = '<span class="badge bg-warning-subtle text-warning px-2.5 py-1.5 status-badge" style="border-radius:6px;">Non-Collegiate</span>';
+                        } else {
+                            statusBadge = '<span class="badge bg-danger-subtle text-danger px-2.5 py-1.5 status-badge" style="border-radius:6px;">Dis-collegiate</span>';
+                        }
+                        row.find('.attendance-status-text').html(statusBadge);
+
                         showAlert('success', 'Marks for ' + row.find('.student-name-link').text().trim() + ' saved successfully!');
                     } else {
                         showAlert('danger', response.message);
@@ -545,6 +577,15 @@
                             $('#mGradePoint').text(response.marks.gradePoint);
                             $('#mRemarks').text(response.marks.remarks);
 
+                            $('#mAttendanceStatus').text(response.marks.attendanceStatus);
+                            if (response.marks.attendanceStatus === 'Collegiate') {
+                                $('#mAttendanceStatus').removeClass().addClass('text-success fw-bold');
+                            } else if (response.marks.attendanceStatus === 'Non-Collegiate') {
+                                $('#mAttendanceStatus').removeClass().addClass('text-warning fw-bold');
+                            } else {
+                                $('#mAttendanceStatus').removeClass().addClass('text-danger fw-bold');
+                            }
+
                             var badgeHtml = '';
                             if (response.marks.isPublished) {
                                 badgeHtml = '<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i> Published</span>';
@@ -555,7 +596,7 @@
                             }
                             $('#mPublishBadge').html(badgeHtml);
                         } else {
-                            $('#mAttendance,#mClassTest,#mMidTerm,#mFinalExam,#mTotalScore,#mLetterGrade,#mGradePoint,#mRemarks').text('N/A');
+                            $('#mAttendance,#mClassTest,#mMidTerm,#mFinalExam,#mTotalScore,#mLetterGrade,#mGradePoint,#mRemarks,#mAttendanceStatus').text('N/A');
                             $('#mPublishBadge').html('<span class="badge bg-secondary">No record</span>');
                             $('#mStatusBlock').removeClass('bg-success-subtle text-success bg-warning-subtle text-warning').addClass('bg-secondary-subtle');
                         }

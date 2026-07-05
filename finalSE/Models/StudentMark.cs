@@ -49,6 +49,9 @@ namespace finalSE.Models
         [MaxLength(50)]
         public string Remarks { get; set; } = "Fail";
 
+        [MaxLength(50)]
+        public string AttendanceStatus { get; set; } = "Dis-collegiate";
+
         public bool IsPublished { get; set; } = false;
 
         public DateTime LastUpdated { get; set; } = DateTime.Now;

@@ -91,6 +91,12 @@
                             Invitations
                         </a>
 
+                        <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "CourseAssignment" ? "active" : "")"
+                               asp-controller="CourseAssignment" asp-action="Index">
+                            <i class="fas fa-book-reader"></i>
+                            Course Assignment
+                        </a>
+
                         <div style="padding: 2rem 1.5rem 0.5rem; font-size: 0.7rem; text-transform: uppercase; color: #475569; font-weight: 800; letter-spacing: 0.1em;">Administration</div>
                         <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "User" ? "active" : "")"
                                asp-controller="User" asp-action="Index">
