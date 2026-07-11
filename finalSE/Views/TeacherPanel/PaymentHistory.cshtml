@@ -1,0 +1,206 @@
+@model List<finalSE.Models.TeacherPayment>
+@{
+    ViewData["Title"] = "Payment History";
+    var teacher = ViewBag.Teacher as finalSE.Models.Teacher;
+}
+
+<div class="container-fluid py-4 animate-up">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="p-5 text-white rounded-5 shadow-lg position-relative overflow-hidden"
+                 style="background: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%); border-radius: 24px;">
+                <div class="position-relative z-index-1">
+                    <span class="badge bg-white bg-opacity-20 text-white px-3 py-2 fs-7 fw-semibold mb-3" style="border-radius: 8px;">
+                        <i class="fas fa-file-invoice-dollar me-1"></i> Salary Statement
+                    </span>
+                    <h1 class="fw-bold display-5 mb-2">Payment History</h1>
+                    <p class="fs-5 text-white-50 mb-0">
+                        @(teacher?.Name ?? "Teacher") &bull; @(teacher?.Department?.DepartmentName ?? "N/A") Department
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    @{
+        var paidPayments = Model.Where(p => p.Status == "Paid").ToList();
+        var totalReceived = paidPayments.Sum(p => p.Amount);
+        var totalPaidCount = paidPayments.Count;
+        var lastPayment = paidPayments.FirstOrDefault();
+    }
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 p-3" style="border-radius: 20px; border-left: 4px solid #10b981 !important;">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div style="width: 56px; height: 56px; background: rgba(16, 185, 129, 0.1); color: #10b981; border-radius: 16px; display: flex; align-items: center; justify-content: center;" class="fs-3">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted fw-semibold mb-1">Total Received</h6>
+                        <h3 class="fw-bold m-0 text-success">৳@totalReceived.ToString("N2")</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 p-3" style="border-radius: 20px; border-left: 4px solid #4f46e5 !important;">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div style="width: 56px; height: 56px; background: rgba(79, 70, 229, 0.1); color: #4f46e5; border-radius: 16px; display: flex; align-items: center; justify-content: center;" class="fs-3">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted fw-semibold mb-1">Completed Payments</h6>
+                        <h3 class="fw-bold m-0">@totalPaidCount</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 p-3" style="border-radius: 20px; border-left: 4px solid #f59e0b !important;">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div style="width: 56px; height: 56px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-radius: 16px; display: flex; align-items: center; justify-content: center;" class="fs-3">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted fw-semibold mb-1">Last Payment</h6>
+                        <h5 class="fw-bold m-0">
+                            @if (lastPayment != null)
+                            {
+                                @lastPayment.PaymentDate.ToString("dd MMM yyyy")
+                            }
+                            else
+                            {
+                                <span class="text-muted">No payments yet</span>
+                            }
+                        </h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment History Table -->
+    <div class="card border-0 shadow-sm" style="border-radius: 20px;">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width: 48px; height: 48px; background: rgba(79, 70, 229, 0.1); color: #4f46e5; border-radius: 14px; display: flex; align-items: center; justify-content: center;" class="fs-4">
+                        <i class="fas fa-list-alt"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold m-0">Salary Statement</h5>
+                        <small class="text-muted">Your complete payment history via bKash</small>
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.Any(p => p.Status == "Paid"))
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr style="background: linear-gradient(135deg, #f8fafc, #f1f5f9); border-radius: 12px;">
+                                <th style="border-radius: 10px 0 0 10px;">SL</th>
+                                <th>Month</th>
+                                <th>Amount (BDT)</th>
+                                <th>Payment Date</th>
+                                <th>bKash Transaction ID</th>
+                                <th style="border-radius: 0 10px 10px 0;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                int sl = 1;
+                            }
+                            @foreach (var p in Model.Where(p => p.Status == "Paid"))
+                            {
+                                <tr class="payment-row">
+                                    <td>
+                                        <span class="badge bg-light text-dark fw-bold" style="border-radius: 8px; padding: 6px 12px;">@sl</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div style="width: 36px; height: 36px; background: rgba(79, 70, 229, 0.08); color: #4f46e5; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                                <i class="fas fa-calendar-day" style="font-size: 0.85rem;"></i>
+                                            </div>
+                                            <span class="fw-semibold">@p.Month</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold fs-5 text-success">৳@p.Amount.ToString("N2")</span>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <span class="fw-semibold">@p.PaymentDate.ToString("dd MMM yyyy")</span>
+                                            <br />
+                                            <small class="text-muted">@p.PaymentDate.ToString("hh:mm tt")</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="fas fa-mobile-alt text-danger" style="font-size: 1.1rem;"></i>
+                                            <code class="text-primary fw-bold" style="font-size: 0.95rem;">@p.TransactionID</code>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success px-3 py-2 fw-semibold" style="border-radius: 8px;">
+                                            <i class="fas fa-check-circle me-1"></i> Paid
+                                        </span>
+                                    </td>
+                                </tr>
+                                sl++;
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-light">
+                                <td colspan="2" class="fw-bold text-end pe-3">Grand Total:</td>
+                                <td class="fw-bold fs-5 text-success">৳@totalReceived.ToString("N2")</td>
+                                <td colspan="3"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <div style="width: 80px; height: 80px; background: rgba(100, 116, 139, 0.08); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                        <i class="fas fa-money-bill-wave fa-2x text-muted opacity-50"></i>
+                    </div>
+                    <h5 class="text-muted fw-bold">No Payment Records Found</h5>
+                    <p class="text-muted small mb-0">Your salary payments will appear here once processed by the administration.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .payment-row {
+        transition: all 0.2s ease;
+    }
+    .payment-row:hover {
+        background-color: rgba(79, 70, 229, 0.02) !important;
+        transform: scale(1.005);
+    }
+    .table th {
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #64748b;
+        font-weight: 700;
+        border-bottom: 2px solid #e2e8f0;
+        padding: 1rem 0.75rem;
+    }
+    .table td {
+        vertical-align: middle;
+        padding: 0.9rem 0.75rem;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .table tfoot td {
+        border-top: 3px solid #e2e8f0;
+        padding: 1rem 0.75rem;
+    }
+</style>

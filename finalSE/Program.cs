@@ -45,6 +45,20 @@ builder.Services.AddScoped<IInvitationService, InvitationService>();
 //Teacher
 builder.Services.AddScoped<ITeacherRepository, TeacherRepository>();
 builder.Services.AddScoped<ITeacherService, TeacherService>();
+
+// bKash Payment Gateway Service
+builder.Services.AddHttpClient("bKash");
+builder.Services.AddScoped<BkashPaymentService>();
+
+// Session (required for bKash payment callback flow)
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
 var app = builder.Build();
 
 // Automatically migrate and seed the database on startup
@@ -249,6 +263,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseSession();
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -1,0 +1,201 @@
+@model List<finalSE.Models.TeacherPayment>
+@{
+    ViewData["Title"] = "Payment History";
+    var selectedTeacherId = ViewBag.SelectedTeacherId as int?;
+    var selectedMonth = ViewBag.SelectedMonth as string;
+}
+
+<div class="container-fluid py-4 animate-up">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="p-4 text-white rounded-4 shadow-sm position-relative overflow-hidden"
+                 style="background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%); border-radius: 16px;">
+                <h2 class="fw-bold m-0"><i class="fas fa-file-invoice-dollar me-2"></i> Complete Payment History</h2>
+                <p class="text-white-50 m-0 mt-1">View and filter all teacher payment records</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerts -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm" role="alert">
+            <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Filter Section -->
+    <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+        <div class="card-body p-4">
+            <form asp-action="PaymentHistory" method="get" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold"><i class="fas fa-chalkboard-teacher me-1"></i> Filter by Teacher</label>
+                    <select name="teacherId" class="form-select" style="border-radius: 10px;">
+                        <option value="">All Teachers</option>
+                        @{
+                            var selectList = ViewBag.Teachers as Microsoft.AspNetCore.Mvc.Rendering.SelectList;
+                            if (selectList != null)
+                            {
+                                foreach (var item in selectList)
+                                {
+                                    <option value="@item.Value" selected="@(item.Selected)">@item.Text</option>
+                                }
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold"><i class="fas fa-calendar-alt me-1"></i> Filter by Month</label>
+                    <input type="text" name="month" class="form-control" style="border-radius: 10px;"
+                           value="@selectedMonth" placeholder="e.g. July 2026" />
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100" style="border-radius: 10px; padding: 0.6rem;">
+                        <i class="fas fa-search me-1"></i> Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+        @{
+            var totalPaid = Model.Where(p => p.Status == "Paid").Sum(p => p.Amount);
+            var paidCount = Model.Count(p => p.Status == "Paid");
+            var pendingCount = Model.Count(p => p.Status == "Pending");
+            var failedCount = Model.Count(p => p.Status == "Failed");
+        }
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm p-3" style="border-radius: 14px; border-left: 4px solid #10b981 !important;">
+                <div class="card-body py-2">
+                    <div class="text-muted small fw-semibold mb-1">Total Paid</div>
+                    <h4 class="fw-bold text-success m-0">৳@totalPaid.ToString("N2")</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm p-3" style="border-radius: 14px; border-left: 4px solid #4f46e5 !important;">
+                <div class="card-body py-2">
+                    <div class="text-muted small fw-semibold mb-1">Paid Transactions</div>
+                    <h4 class="fw-bold text-primary m-0">@paidCount</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm p-3" style="border-radius: 14px; border-left: 4px solid #f59e0b !important;">
+                <div class="card-body py-2">
+                    <div class="text-muted small fw-semibold mb-1">Pending</div>
+                    <h4 class="fw-bold text-warning m-0">@pendingCount</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm p-3" style="border-radius: 14px; border-left: 4px solid #ef4444 !important;">
+                <div class="card-body py-2">
+                    <div class="text-muted small fw-semibold mb-1">Failed</div>
+                    <h4 class="fw-bold text-danger m-0">@failedCount</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payments Table -->
+    <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+        <div class="card-body p-4">
+            @if (Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Teacher</th>
+                                <th>Department</th>
+                                <th>Month</th>
+                                <th>Amount (BDT)</th>
+                                <th>bKash TrxID</th>
+                                <th>Payment Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{ int sl = 1; }
+                            @foreach (var p in Model)
+                            {
+                                <tr>
+                                    <td class="fw-semibold text-muted">@sl</td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div style="width: 34px; height: 34px; background: rgba(79, 70, 229, 0.1); color: #4f46e5; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                                <i class="fas fa-user-tie" style="font-size: 0.85rem;"></i>
+                                            </div>
+                                            <span class="fw-semibold">@p.Teacher?.Name</span>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge bg-light text-dark">@(p.Teacher?.Department?.DepartmentName ?? "N/A")</span></td>
+                                    <td>@p.Month</td>
+                                    <td class="fw-bold">৳@p.Amount.ToString("N2")</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(p.TransactionID))
+                                        {
+                                            <code class="text-primary fw-semibold">@p.TransactionID</code>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </td>
+                                    <td>@p.PaymentDate.ToString("dd MMM yyyy, hh:mm tt")</td>
+                                    <td>
+                                        @if (p.Status == "Paid")
+                                        {
+                                            <span class="badge bg-success px-3 py-2" style="border-radius: 8px;"><i class="fas fa-check-circle me-1"></i> Paid</span>
+                                        }
+                                        else if (p.Status == "Pending")
+                                        {
+                                            <span class="badge bg-warning text-dark px-3 py-2" style="border-radius: 8px;"><i class="fas fa-clock me-1"></i> Pending</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger px-3 py-2" style="border-radius: 8px;"><i class="fas fa-times-circle me-1"></i> Failed</span>
+                                        }
+                                    </td>
+                                </tr>
+                                sl++;
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-search fa-4x text-muted mb-3 opacity-25"></i>
+                    <h6 class="text-muted fw-bold">No Payment Records Found</h6>
+                    <p class="text-muted small">Try adjusting your filters or process a new payment.</p>
+                    <a asp-action="Index" class="btn btn-primary mt-2" style="border-radius: 10px;">
+                        <i class="fas fa-plus me-1"></i> Process Payment
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .table th {
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #64748b;
+        font-weight: 700;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    .table td {
+        vertical-align: middle;
+        padding: 0.85rem 0.75rem;
+    }
+</style>

@@ -37,6 +37,8 @@ public class MyDBContext : DbContext
 
     public DbSet<CourseAssignment> CourseAssignments { get; set; }
 
+    public DbSet<TeacherPayment> TeacherPayments { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -79,6 +81,12 @@ public class MyDBContext : DbContext
             .HasOne(ca => ca.Teacher)
             .WithMany()
             .HasForeignKey(ca => ca.TeacherId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<TeacherPayment>()
+            .HasOne(tp => tp.Teacher)
+            .WithMany()
+            .HasForeignKey(tp => tp.TeacherID)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

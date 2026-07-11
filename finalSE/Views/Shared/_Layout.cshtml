@@ -97,6 +97,12 @@
                             Course Assignment
                         </a>
 
+                        <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "TeacherPayment" ? "active" : "")"
+                               asp-controller="TeacherPayment" asp-action="Index">
+                            <i class="fas fa-money-bill-wave"></i>
+                            Teacher Payments
+                        </a>
+
                         <div style="padding: 2rem 1.5rem 0.5rem; font-size: 0.7rem; text-transform: uppercase; color: #475569; font-weight: 800; letter-spacing: 0.1em;">Administration</div>
                         <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "User" ? "active" : "")"
                                asp-controller="User" asp-action="Index">
@@ -145,6 +151,12 @@
                                asp-controller="TeacherPanel" asp-action="StudentMarks">
                             <i class="fas fa-graduation-cap"></i>
                             Student Marks
+                        </a>
+
+                        <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "TeacherPanel" && ViewContext.RouteData.Values["Action"]?.ToString() == "PaymentHistory" ? "active" : "")"
+                               asp-controller="TeacherPanel" asp-action="PaymentHistory">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                            Salary Statement
                         </a>
 
                         <a class="menu-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "TeacherPanel" && ViewContext.RouteData.Values["Action"]?.ToString() == "Routines" ? "active" : "")"

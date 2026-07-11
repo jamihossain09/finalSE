@@ -840,5 +840,23 @@ namespace finalSE.Controllers
             if (total >= 40) return ("D",  2.00, "Pass", attendanceStatus);
             return ("F", 0.00, "Fail", attendanceStatus);
         }
+
+        // ================= PAYMENT HISTORY (TEACHER VIEW) =================
+        public async Task<IActionResult> PaymentHistory()
+        {
+            var teacher = await GetCurrentTeacherAsync();
+            if (teacher == null)
+            {
+                return Content("❌ Teacher profile not found. Please contact the administrator.");
+            }
+
+            var payments = await _context.TeacherPayments
+                .Where(p => p.TeacherID == teacher.Id)
+                .OrderByDescending(p => p.PaymentDate)
+                .ToListAsync();
+
+            ViewBag.Teacher = teacher;
+            return View(payments);
+        }
     }
 }
