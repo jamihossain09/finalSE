@@ -1,4 +1,4 @@
-﻿using finalSE.Models;
+using finalSE.Models;
 using finalSE.Service.Interface;
 using finalSE.UnitOfWork.Interface;
 using System;
@@ -38,11 +38,27 @@ namespace finalSE.Service.Application
             var existing = await _uow.Student.GetByIdAsync(id);
             if (existing == null) return false;
 
+            string oldEmail = existing.Email;
+
             existing.Name = student.Name;
             existing.Age = student.Age;
             existing.Email = student.Email;
             existing.Address = student.Address;
-            existing.DepartmentId = student.DepartmentId;
+            if (student.DepartmentId > 0)
+            {
+                existing.DepartmentId = student.DepartmentId;
+            }
+
+            // Sync corresponding User account if exists
+            if (!string.IsNullOrWhiteSpace(oldEmail))
+            {
+                var user = _uow.User.GetAll().FirstOrDefault(u => string.Equals(u.Email, oldEmail, StringComparison.OrdinalIgnoreCase));
+                if (user != null)
+                {
+                    user.Email = student.Email;
+                    _uow.User.Update(user);
+                }
+            }
 
             _uow.Student.Update(existing);
             await _uow.SaveChangesAsync();

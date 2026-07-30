@@ -76,8 +76,9 @@ public class RoutineController : Controller
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create(Routine routine, IFormFile file)
     {
-        if (file == null)
+        if (file == null || file.Length == 0)
         {
+            ModelState.AddModelError("", "Please select a routine file to upload.");
             ViewBag.Departments = await _context.Departments.OrderBy(d => d.DepartmentName).ToListAsync();
             return View(routine);
         }
@@ -98,10 +99,13 @@ public class RoutineController : Controller
         routine.FilePath = "/uploads/routines/" + fileName;
         routine.UploadedAt = DateTime.Now;
 
+        ModelState.Remove("FilePath");
+
         if (ModelState.IsValid)
         {
             _context.Routines.Add(routine);
             await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Class routine uploaded successfully!";
             return RedirectToAction("Index");
         }
 

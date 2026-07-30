@@ -115,6 +115,8 @@ namespace finalSE.Controllers
             notice.FilePath = "/uploads/notices/" + uniqueFileName;
             notice.PublishedAt = DateTime.Now;
 
+            ModelState.Remove("FilePath");
+
             if (ModelState.IsValid)
             {
                 _context.Notices.Add(notice);

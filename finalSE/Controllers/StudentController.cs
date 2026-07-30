@@ -80,8 +80,23 @@ namespace finalSE.Controllers
         {
             if (id != student.Id) return NotFound();
 
-            await _studentService.UpdateAsync(id, student);
-            return RedirectToAction(nameof(Index));
+            if (ModelState.IsValid)
+            {
+                var success = await _studentService.UpdateAsync(id, student);
+                if (success)
+                {
+                    TempData["SuccessMessage"] = "Student details updated successfully!";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+
+            ViewBag.Departments = new SelectList(
+                await _departmentService.GetAllAsync(),
+                "Id",
+                "DepartmentName",
+                student.DepartmentId
+            );
+            return View(student);
         }
 
         // DELETE

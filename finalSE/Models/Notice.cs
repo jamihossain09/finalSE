@@ -12,8 +12,7 @@ namespace finalSE.Models
         
         public string? Description { get; set; }
         
-        [Required]
-        public string FilePath { get; set; } // PDF file path
+        public string? FilePath { get; set; } // PDF file path
         
         public DateTime PublishedAt { get; set; } = DateTime.Now;
 

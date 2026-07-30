@@ -394,44 +394,46 @@
     <div class="modal fade" id="bulkUploadModal" tabindex="-1" aria-labelledby="bulkUploadModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
-                <form asp-controller="TeacherPanel" asp-action="UploadMarksExcel" asp-route-subjectId="@selectedSubject.Id" method="post" enctype="multipart/form-data">
-                    @Html.AntiForgeryToken()
-                    <div class="modal-header text-white p-4" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-top-left-radius: 20px; border-top-right-radius: 20px;">
-                        <h5 class="modal-title fw-bold" id="bulkUploadModalLabel">
-                            <i class="fas fa-file-excel me-2"></i> Bulk Marks Upload
-                        </h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                @* NOTE: No form tag here — upload is handled via AJAX to prevent page freeze inside modal *@
+                @Html.AntiForgeryToken()
+                <div class="modal-header text-white p-4" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-top-left-radius: 20px; border-top-right-radius: 20px;">
+                    <h5 class="modal-title fw-bold" id="bulkUploadModalLabel">
+                        <i class="fas fa-file-excel me-2"></i> Bulk Marks Upload
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <!-- Inline feedback -->
+                    <div id="bulkUploadAlert" class="d-none mb-3"></div>
+
+                    <p class="text-muted small">
+                        Import results in bulk for <strong>@selectedSubject.SubjectCode - @selectedSubject.SubjectName</strong>.
+                    </p>
+                    
+                    <div class="alert alert-info border-0 rounded-3 mb-4" style="font-size: 0.85rem;">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Instructions:</strong>
+                        <ol class="ps-3 mb-0 mt-1">
+                            <li>Click <strong>Download Template</strong> to get the list of students in your department.</li>
+                            <li>Open the CSV template in Excel, enter numerical marks under the score columns, and save the file.</li>
+                            <li>Upload the updated CSV or Excel (.xlsx) file below.</li>
+                            <li class="text-danger">Uploaded results will be verified and published automatically!</li>
+                        </ol>
                     </div>
-                    <div class="modal-body p-4">
-                        <p class="text-muted small">
-                            Import results in bulk for <strong>@selectedSubject.SubjectCode - @selectedSubject.SubjectName</strong>.
-                        </p>
-                        
-                        <div class="alert alert-info border-0 rounded-3 mb-4" style="font-size: 0.85rem;">
-                            <i class="fas fa-info-circle me-2"></i>
-                            <strong>Instructions:</strong>
-                            <ol class="ps-3 mb-0 mt-1">
-                                <li>Click <strong>Download Template</strong> to get the list of students in your department.</li>
-                                <li>Open the CSV template in Excel, enter numerical marks under the score columns, and save the file.</li>
-                                <li>Upload the updated CSV or Excel (.xlsx) file below.</li>
-                                <li class="text-danger">Uploaded results will be verified and published automatically!</li>
-                            </ol>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Select Spreadsheet File</label>
-                            <input type="file" name="file" class="form-control" accept=".csv, .xlsx, .xls" required />
-                            <div class="form-text">Supports CSV, XLSX, and XLS formats.</div>
-                        </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Select Spreadsheet File</label>
+                        <input type="file" id="bulkUploadFileInput" class="form-control" accept=".csv, .xlsx, .xls" required />
+                        <div class="form-text">Supports CSV, XLSX, and XLS formats.</div>
                     </div>
-                    <div class="modal-footer border-0 bg-light p-3" style="border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;">
-                        <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal" style="border-radius: 10px;">Cancel</button>
-                        <button type="submit" id="uploadSubmitBtn" class="btn btn-success px-4" style="border-radius: 10px;"
-                                onclick="this.disabled=true; this.innerHTML='<span class=\'spinner-border spinner-border-sm me-2\' role=\'status\'></span>Uploading...'; this.closest(\'form\').submit();">
-                            <i class="fas fa-cloud-upload-alt me-1"></i> Upload &amp; Publish
-                        </button>
-                    </div>
-                </form>
+                </div>
+                <div class="modal-footer border-0 bg-light p-3" style="border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;">
+                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal" style="border-radius: 10px;">Cancel</button>
+                    <button type="button" id="bulkUploadSubmitBtn" class="btn btn-success px-4" style="border-radius: 10px;"
+                            onclick="submitBulkUpload(@selectedSubject.Id)">
+                        <i class="fas fa-cloud-upload-alt me-1"></i> Upload &amp; Publish
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -457,6 +459,13 @@
                 var grade = $(this).text().trim();
                 $(this).removeClass('bg-secondary').addClass(getGradeBadgeClass(grade));
             });
+
+            // Move modals to body to prevent z-index freeze due to animate-up parent wrapper
+            var infoModal = document.getElementById('studentInfoModal');
+            if (infoModal) document.body.appendChild(infoModal);
+
+            var bulkModal = document.getElementById('bulkUploadModal');
+            if (bulkModal) document.body.appendChild(bulkModal);
         });
 
         function updateGradeBadgeColor(rowId, grade) {
@@ -555,59 +564,127 @@
         }
 
         function viewStudentDetails(studentId, subjectId) {
-            $.ajax({
-                url: '@Url.Action("GetStudentInfo", "TeacherPanel")',
-                type: 'GET',
-                data: { studentId, subjectId },
-                success: function (response) {
+            var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            fetch('@Url.Action("GetStudentInfo", "TeacherPanel")?studentId=' + studentId + '&subjectId=' + subjectId, {
+                method: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(r => r.json())
+            .then(function(response) {
                     if (response.success) {
-                        $('#mStudentName').text(response.student.name);
-                        $('#mStudentDept').text(response.student.department);
-                        $('#mStudentEmail').text(response.student.email);
-                        $('#mStudentAge').text(response.student.age);
-                        $('#mStudentAddress').text(response.student.address || 'N/A');
+                        document.getElementById('mStudentName').textContent = response.student.name;
+                        document.getElementById('mStudentDept').textContent = response.student.department;
+                        document.getElementById('mStudentEmail').textContent = response.student.email;
+                        document.getElementById('mStudentAge').textContent = response.student.age;
+                        document.getElementById('mStudentAddress').textContent = response.student.address || 'N/A';
 
                         if (response.marks) {
-                            $('#mAttendance').text(response.marks.attendance.toFixed(1));
-                            $('#mClassTest').text(response.marks.classTest.toFixed(1));
-                            $('#mMidTerm').text(response.marks.midTerm.toFixed(1));
-                            $('#mFinalExam').text(response.marks.finalExam.toFixed(1));
-                            $('#mTotalScore').text(response.marks.total.toFixed(1));
-                            $('#mLetterGrade').text(response.marks.letterGrade);
-                            $('#mGradePoint').text(response.marks.gradePoint);
-                            $('#mRemarks').text(response.marks.remarks);
+                            document.getElementById('mAttendance').textContent = response.marks.attendance.toFixed(1);
+                            document.getElementById('mClassTest').textContent = response.marks.classTest.toFixed(1);
+                            document.getElementById('mMidTerm').textContent = response.marks.midTerm.toFixed(1);
+                            document.getElementById('mFinalExam').textContent = response.marks.finalExam.toFixed(1);
+                            document.getElementById('mTotalScore').textContent = response.marks.total.toFixed(1);
+                            document.getElementById('mLetterGrade').textContent = response.marks.letterGrade;
+                            document.getElementById('mGradePoint').textContent = response.marks.gradePoint;
+                            document.getElementById('mRemarks').textContent = response.marks.remarks;
 
-                            $('#mAttendanceStatus').text(response.marks.attendanceStatus);
-                            if (response.marks.attendanceStatus === 'Collegiate') {
-                                $('#mAttendanceStatus').removeClass().addClass('text-success fw-bold');
-                            } else if (response.marks.attendanceStatus === 'Non-Collegiate') {
-                                $('#mAttendanceStatus').removeClass().addClass('text-warning fw-bold');
-                            } else {
-                                $('#mAttendanceStatus').removeClass().addClass('text-danger fw-bold');
-                            }
+                            var attStatus = response.marks.attendanceStatus;
+                            var attEl = document.getElementById('mAttendanceStatus');
+                            attEl.textContent = attStatus;
+                            attEl.className = attStatus === 'Collegiate' ? 'text-success fw-bold'
+                                            : attStatus === 'Non-Collegiate' ? 'text-warning fw-bold'
+                                            : 'text-danger fw-bold';
 
                             var badgeHtml = '';
+                            var statusBlock = document.getElementById('mStatusBlock');
                             if (response.marks.isPublished) {
                                 badgeHtml = '<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i> Published</span>';
-                                $('#mStatusBlock').removeClass('bg-warning-subtle text-warning').addClass('bg-success-subtle text-success');
+                                statusBlock.className = 'p-2.5 rounded-3 d-flex justify-content-between align-items-center bg-success-subtle text-success';
                             } else {
                                 badgeHtml = '<span class="badge bg-warning text-dark"><i class="fas fa-edit me-1"></i> Draft</span>';
-                                $('#mStatusBlock').removeClass('bg-success-subtle text-success').addClass('bg-warning-subtle text-warning');
+                                statusBlock.className = 'p-2.5 rounded-3 d-flex justify-content-between align-items-center bg-warning-subtle text-warning';
                             }
-                            $('#mPublishBadge').html(badgeHtml);
+                            document.getElementById('mPublishBadge').innerHTML = badgeHtml;
                         } else {
-                            $('#mAttendance,#mClassTest,#mMidTerm,#mFinalExam,#mTotalScore,#mLetterGrade,#mGradePoint,#mRemarks,#mAttendanceStatus').text('N/A');
-                            $('#mPublishBadge').html('<span class="badge bg-secondary">No record</span>');
-                            $('#mStatusBlock').removeClass('bg-success-subtle text-success bg-warning-subtle text-warning').addClass('bg-secondary-subtle');
+                            ['mAttendance','mClassTest','mMidTerm','mFinalExam','mTotalScore','mLetterGrade','mGradePoint','mRemarks','mAttendanceStatus'].forEach(function(id){
+                                document.getElementById(id).textContent = 'N/A';
+                            });
+                            document.getElementById('mPublishBadge').innerHTML = '<span class="badge bg-secondary">No record</span>';
+                            document.getElementById('mStatusBlock').className = 'p-2.5 rounded-3 d-flex justify-content-between align-items-center bg-secondary-subtle';
                         }
 
-                        var myModal = new bootstrap.Modal(document.getElementById('studentInfoModal'));
-                        myModal.show();
+                        // Use getOrCreateInstance to avoid duplicate modal / freeze
+                        bootstrap.Modal.getOrCreateInstance(document.getElementById('studentInfoModal')).show();
                     } else {
                         alert(response.message);
                     }
+            })
+            .catch(function() { alert('Could not retrieve student information.'); });
+        }
+
+        // ===== AJAX Bulk Upload — prevents page freeze inside Bootstrap modal =====
+        function submitBulkUpload(subjectId) {
+            var fileInput = document.getElementById('bulkUploadFileInput');
+            var alertBox  = document.getElementById('bulkUploadAlert');
+            var submitBtn = document.getElementById('bulkUploadSubmitBtn');
+
+            if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+                alertBox.className = 'alert alert-warning mb-3';
+                alertBox.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Please select a file before uploading.';
+                return;
+            }
+
+            var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            var formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('subjectId', subjectId);
+            formData.append('__RequestVerificationToken', token);
+
+            // Show spinner
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Uploading...';
+            alertBox.className = 'd-none mb-3';
+
+            fetch('@Url.Action("UploadMarksExcel", "TeacherPanel")', {
+                method: 'POST',
+                // NOTE: Do NOT set Content-Type — browser sets it automatically with correct boundary for FormData
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
-                error: function () { alert('Could not retrieve student information.'); }
+                body: formData
+            })
+            .then(function(response) {
+                // Always read as text first so we can handle both JSON and HTML redirect responses
+                return response.text().then(function(text) {
+                    return { ok: response.ok, status: response.status, text: text };
+                });
+            })
+            .then(function(result) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-cloud-upload-alt me-1"></i> Upload & Publish';
+
+                var data = null;
+                try { data = JSON.parse(result.text); } catch(e) { /* not JSON — might be redirect HTML */ }
+
+                if (data && data.success === false) {
+                    alertBox.className = 'alert alert-danger mb-3';
+                    alertBox.innerHTML = '<i class="fas fa-times-circle me-2"></i>' + (data.message || 'Upload failed.');
+                } else if (data && data.success === true) {
+                    alertBox.className = 'alert alert-success mb-3';
+                    alertBox.innerHTML = '<i class="fas fa-check-circle me-2"></i>' + (data.message || 'File uploaded successfully! Refreshing marks...');
+                    setTimeout(function () { window.location.reload(); }, 1800);
+                } else {
+                    // Non-JSON response (redirect page), treat as success
+                    alertBox.className = 'alert alert-success mb-3';
+                    alertBox.innerHTML = '<i class="fas fa-check-circle me-2"></i>Marks uploaded and published successfully! Refreshing...';
+                    setTimeout(function () { window.location.reload(); }, 1800);
+                }
+            })
+            .catch(function(err) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-cloud-upload-alt me-1"></i> Upload & Publish';
+                alertBox.className = 'alert alert-danger mb-3';
+                alertBox.innerHTML = '<i class="fas fa-times-circle me-2"></i>Network error during upload. Please try again.';
             });
         }
     </script>

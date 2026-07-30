@@ -10,8 +10,22 @@ using finalSE.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ── Large file upload support (class recordings up to 500 MB) ──────────────
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 524_288_000; // 500 MB
+});
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// Allow large multipart form uploads (needed for video class recordings)
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 524_288_000; // 500 MB
+    options.ValueLengthLimit        = int.MaxValue;
+    options.MultipartHeadersLengthLimit = int.MaxValue;
+});
 builder.Services.AddMemoryCache();
 
 builder.Services.AddDbContext<MyDBContext>(options =>

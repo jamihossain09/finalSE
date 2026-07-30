@@ -1,3 +1,4 @@
+@using System.Text.Encodings.Web
 @model IEnumerable<finalSE.Models.ClassRecord>
 
 @{
@@ -48,31 +49,38 @@
         {
             @foreach (var record in Model)
             {
+                @* Build the correct playback URL: local files go through StreamVideo; external links used as-is *@
+                string playUrl = record.UploadType == "File"
+                    ? Url.Action("StreamVideo", "StudentPortal", new { id = record.Id }) ?? record.FilePathOrLink
+                    : record.FilePathOrLink;
+
                 <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100 border-0 shadow-sm" style="border-radius: 16px; overflow: hidden; background: #fff;">
-                        <!-- Video Thumbnail Placeholder -->
-                        <div style="height: 180px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); display: flex; align-items: center; justify-content: center; position: relative;">
-                            <div class="text-white text-center">
-                                <span class="fs-1 text-success opacity-75"><i class="fas fa-circle-play"></i></span>
-                                <div class="mt-2 small text-slate-300">Recorded Lecture</div>
+                    <div class="card h-100 border-0 shadow-sm video-card" style="border-radius: 16px; overflow: hidden; background: #fff; transition: transform .2s ease, box-shadow .2s ease;">
+                        <!-- Video Thumbnail Placeholder & Play Overlay -->
+                        <div role="button" onclick="openVideoModal('@Html.Raw(JavaScriptEncoder.Default.Encode(record.Title))', '@Html.Raw(JavaScriptEncoder.Default.Encode(playUrl))', '@record.UploadType')"
+                             style="height: 190px; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); display: flex; align-items: center; justify-content: center; position: relative; cursor: pointer;">
+                            <div class="text-white text-center play-btn-overlay">
+                                <span class="fs-1 text-success opacity-90"><i class="fas fa-circle-play fa-2x"></i></span>
+                                <div class="mt-2 small text-slate-300 fw-semibold">Click to Play Video</div>
                             </div>
-                            <span class="position-absolute top-0 end-0 m-3 badge @(record.UploadType == "Link" ? "bg-info" : "bg-success") px-2 py-1" style="border-radius: 6px;">
-                                @record.UploadType
+                            <span class="position-absolute top-0 end-0 m-3 badge @(record.UploadType == "Link" ? "bg-info" : "bg-success") px-2.5 py-1.5" style="border-radius: 6px;">
+                                <i class="@(record.UploadType == "Link" ? "fas fa-link" : "fas fa-file-video") me-1"></i> @record.UploadType
                             </span>
                         </div>
                         
                         <div class="card-body p-4 d-flex flex-column">
-                            <h4 class="fw-bold text-dark mb-2">@record.Title</h4>
-                            <p class="text-muted small flex-grow-1">@record.Description</p>
+                            <h5 class="fw-bold text-dark mb-2">@record.Title</h5>
+                            <p class="text-muted small flex-grow-1">@(string.IsNullOrWhiteSpace(record.Description) ? "Recorded Class Lecture" : record.Description)</p>
                             
                             <div class="mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
                                 <div>
                                     <div class="small fw-semibold text-dark"><i class="fas fa-chalkboard-teacher me-1 text-primary"></i> @(record.Teacher?.Name ?? "Teacher")</div>
                                     <div class="text-muted" style="font-size: 0.75rem;">@record.UploadedAt.ToString("MMM dd, yyyy")</div>
                                 </div>
-                                <a href="@record.FilePathOrLink" target="_blank" class="btn btn-success btn-sm px-3" style="border-radius: 8px;">
+                                <button type="button" onclick="openVideoModal('@Html.Raw(JavaScriptEncoder.Default.Encode(record.Title))', '@Html.Raw(JavaScriptEncoder.Default.Encode(playUrl))', '@record.UploadType')"
+                                        class="btn btn-success btn-sm px-3 fw-semibold" style="border-radius: 8px;">
                                     <i class="fas fa-play me-1"></i> Watch
-                                </a>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -82,7 +90,125 @@
     </div>
 </div>
 
+
+<!-- Video Player Modal -->
+<div class="modal fade" id="videoPlayerModal" tabindex="-1" aria-labelledby="videoModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden; background: #0f172a; color: white;">
+            <div class="modal-header border-secondary p-4">
+                <h5 class="modal-title fw-bold text-white" id="videoModalTitle"><i class="fas fa-video text-success me-2"></i>Class Video Record</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <div id="videoPlayerContainer" class="w-100">
+                    <!-- Dynamic player inserted via JS -->
+                </div>
+            </div>
+            <div class="modal-footer border-secondary p-3 d-flex justify-content-between">
+                <a href="#" id="videoExternalBtn" target="_blank" class="btn btn-outline-light btn-sm" style="border-radius: 8px;">
+                    <i class="fas fa-external-link-alt me-1"></i> Open External Link
+                </a>
+                <button type="button" class="btn btn-secondary btn-sm px-4" data-bs-dismiss="modal" style="border-radius: 8px;">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openVideoModal(title, url, type) {
+            document.getElementById('videoModalTitle').textContent = title;
+            document.getElementById('videoExternalBtn').href = url;
+
+            var container = document.getElementById('videoPlayerContainer');
+            // Clear previous content safely (stops any ongoing stream/playback)
+            var oldVideo = container.querySelector('video');
+            if (oldVideo) { oldVideo.pause(); oldVideo.src = ''; oldVideo.load(); }
+            container.innerHTML = '';
+
+            if (type === 'File') {
+                // Uploaded file — use the StreamVideo endpoint which supports any format
+                // The browser will use its native codecs; mp4/webm/ogg play inline;
+                // other formats (mkv, avi, mov) will be served and browser will try to play.
+                var video = document.createElement('video');
+                video.id = 'myCustomVideo';
+                video.controls = true;
+                video.autoplay = true;
+                video.className = 'w-100 rounded-3 shadow';
+                video.style.cssText = 'max-height: 480px; background: #000;';
+                video.innerHTML = `<source src="${url}"><p class="text-white p-3">Your browser cannot play this format. <a href="${url}" class="text-warning" download>Download video</a> instead.</p>`;
+                container.appendChild(video);
+
+                // Add custom playback speed controls below the video
+                var controlsHtml = document.createElement('div');
+                controlsHtml.className = "d-flex justify-content-center align-items-center mt-3 gap-2";
+                controlsHtml.innerHTML = `
+                    <label class="text-white small mb-0"><i class="fas fa-tachometer-alt me-1"></i> Playback Speed:</label>
+                    <select class="form-select form-select-sm w-auto bg-dark text-white border-secondary" style="border-radius:6px; cursor:pointer;" onchange="document.getElementById('myCustomVideo').playbackRate = parseFloat(this.value)">
+                        <option value="0.5">0.5x</option>
+                        <option value="0.75">0.75x</option>
+                        <option value="1" selected>1.0x (Normal)</option>
+                        <option value="1.25">1.25x</option>
+                        <option value="1.5">1.5x</option>
+                        <option value="2">2.0x</option>
+                    </select>
+                `;
+                container.appendChild(controlsHtml);
+            } else {
+                var embedUrl = url;
+                if (url.includes('youtube.com/watch?v=')) {
+                    var videoId = url.split('v=')[1].split('&')[0];
+                    embedUrl = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1';
+                } else if (url.includes('youtu.be/')) {
+                    var videoId = url.split('youtu.be/')[1].split('?')[0];
+                    embedUrl = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1';
+                } else if (url.includes('drive.google.com')) {
+                    // Google Drive preview
+                    var fileId = url.match(/\/d\/([^/]+)/);
+                    if (fileId) embedUrl = 'https://drive.google.com/file/d/' + fileId[1] + '/preview';
+                }
+
+                container.innerHTML = `
+                    <div class="ratio ratio-16x9 rounded-3 overflow-hidden shadow">
+                        <iframe src="${embedUrl}" title="${title}" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+                    </div>
+                `;
+            }
+
+            // Use getOrCreateInstance to avoid duplicate Modal instances (which cause freeze)
+            var videoModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('videoPlayerModal'));
+            videoModal.show();
+        }
+
+        document.getElementById('videoPlayerModal').addEventListener('hidden.bs.modal', function () {
+            var container = document.getElementById('videoPlayerContainer');
+            // Properly stop video before clearing (prevents memory leak & next-open freeze)
+            var oldVideo = container.querySelector('video');
+            if (oldVideo) { oldVideo.pause(); oldVideo.src = ''; oldVideo.load(); }
+            container.innerHTML = '';
+        });
+
+        // Move modal to body to prevent z-index freeze due to animate-up parent wrapper
+        document.addEventListener('DOMContentLoaded', function() {
+            var modal = document.getElementById('videoPlayerModal');
+            if (modal) {
+                document.body.appendChild(modal);
+            }
+        });
+    </script>
+}
+
 <style>
+    .video-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0,0,0,.1) !important;
+    }
+    .play-btn-overlay {
+        transition: transform .2s ease;
+    }
+    .video-card:hover .play-btn-overlay {
+        transform: scale(1.1);
+    }
     .text-slate-300 {
         color: #cbd5e1 !important;
     }

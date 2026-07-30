@@ -13,8 +13,7 @@ namespace finalSE.Models
         [Required]
         public string Type { get; set; } // Class / Exam
         
-        [Required]
-        public string FilePath { get; set; }
+        public string? FilePath { get; set; }
         
         public DateTime UploadedAt { get; set; } = DateTime.Now;
 

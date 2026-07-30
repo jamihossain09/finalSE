@@ -237,10 +237,14 @@
                         <p class="text-muted m-0">Organization Portal &bull; @User.Identity.Name</p>
                     </div>
                     <div style="display: flex; gap: 1.5rem; align-items: center;">
-                        <div class="premium-card" style="padding: 0.5rem 1rem; border-radius: 1rem; display: flex; align-items: center; gap: 1rem;">
-                            <i class="fas fa-search text-muted"></i>
-                            <input type="text" placeholder="Global search..." style="border: none; outline: none; background: none; width: 150px; font-size: 0.875rem;">
-                        </div>
+                        <form asp-controller="Search" asp-action="Index" method="get" class="m-0">
+                            <div class="premium-card" style="padding: 0.5rem 1rem; border-radius: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <button type="submit" style="background: none; border: none; padding: 0; color: inherit; cursor: pointer;">
+                                    <i class="fas fa-search text-muted"></i>
+                                </button>
+                                <input type="text" name="q" value="@Context.Request.Query["q"]" placeholder="Global search..." style="border: none; outline: none; background: none; width: 160px; font-size: 0.875rem;" />
+                            </div>
+                        </form>
                         <div style="display: flex; align-items: center; gap: 1rem;">
                             <div style="width: 48px; height: 48px; background: var(--sidebar-bg); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: var(--shadow-premium);" title="@User.Identity.Name">
                                 <i class="fas fa-user-astronaut"></i>

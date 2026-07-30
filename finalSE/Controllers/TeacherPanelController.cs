@@ -99,6 +99,8 @@ namespace finalSE.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Microsoft.AspNetCore.Mvc.RequestSizeLimit(524_288_000)] // 500 MB
+        [Microsoft.AspNetCore.Mvc.RequestFormLimits(MultipartBodyLengthLimit = 524_288_000)]
         public async Task<IActionResult> UploadClassRecord(string title, string? description, string uploadType, string? link, IFormFile? file)
         {
             var teacher = await GetCurrentTeacherAsync();
@@ -620,18 +622,33 @@ namespace finalSE.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UploadMarksExcel(int subjectId, IFormFile file)
         {
+            bool isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest";
+
             var teacher = await GetCurrentTeacherAsync();
-            if (teacher == null) return NotFound("Teacher profile not found.");
+            if (teacher == null)
+            {
+                if (isAjax) return Json(new { success = false, message = "Teacher profile not found." });
+                return NotFound("Teacher profile not found.");
+            }
 
             // Verify the subject is assigned to this teacher
             var isAssigned = await _context.CourseAssignments.AnyAsync(ca => ca.SubjectId == subjectId && ca.TeacherId == teacher.Id);
-            if (!isAssigned) return NotFound("Subject not found or not assigned to you.");
+            if (!isAssigned)
+            {
+                if (isAjax) return Json(new { success = false, message = "Subject not found or not assigned to you." });
+                return NotFound("Subject not found or not assigned to you.");
+            }
 
             var subject = await _context.Subjects.FirstOrDefaultAsync(s => s.Id == subjectId && s.DepartmentId == teacher.DepartmentId);
-            if (subject == null) return NotFound("Subject not found.");
+            if (subject == null)
+            {
+                if (isAjax) return Json(new { success = false, message = "Subject not found." });
+                return NotFound("Subject not found.");
+            }
 
             if (file == null || file.Length == 0)
             {
+                if (isAjax) return Json(new { success = false, message = "Please select a valid file to upload." });
                 TempData["ErrorMessage"] = "Please select a valid file to upload.";
                 return RedirectToAction(nameof(StudentMarks), new { subjectId });
             }
@@ -639,6 +656,7 @@ namespace finalSE.Controllers
             string extension = Path.GetExtension(file.FileName).ToLower();
             if (extension != ".csv" && extension != ".xlsx" && extension != ".xls")
             {
+                if (isAjax) return Json(new { success = false, message = "Only CSV and Excel files (.xlsx, .xls) are supported." });
                 TempData["ErrorMessage"] = "Only CSV and Excel files (.xlsx, .xls) are supported.";
                 return RedirectToAction(nameof(StudentMarks), new { subjectId });
             }
@@ -660,15 +678,16 @@ namespace finalSE.Controllers
                             if (string.IsNullOrWhiteSpace(line)) continue;
 
                             var parts = ParseCsvLine(line);
-                            if (parts.Count < 7) continue;
+                            if (parts.Count < 4) continue;
 
-                            if (!int.TryParse(parts[0], out int studentId)) continue;
-                            string email = parts[1];
-                            
-                            double.TryParse(parts[3], out double attendance);
-                            double.TryParse(parts[4], out double classTest);
-                            double.TryParse(parts[5], out double midTerm);
-                            double.TryParse(parts[6], out double finalExam);
+                            int studentId = 0;
+                            int.TryParse(parts[0], out studentId);
+                            string email = parts.Count > 1 ? parts[1] : "";
+
+                            double attendance = parts.Count > 3 ? ParseDouble(parts[3]) : 0;
+                            double classTest = parts.Count > 4 ? ParseDouble(parts[4]) : 0;
+                            double midTerm = parts.Count > 5 ? ParseDouble(parts[5]) : 0;
+                            double finalExam = parts.Count > 6 ? ParseDouble(parts[6]) : 0;
 
                             var result = await ProcessStudentMarkAsync(studentId, email, subjectId, teacher.Id, teacher.DepartmentId, attendance, classTest, midTerm, finalExam);
                             if (result.Success) successCount++;
@@ -694,16 +713,16 @@ namespace finalSE.Controllers
                             var table = resultDs.Tables[0];
                             foreach (System.Data.DataRow row in table.Rows)
                             {
-                                if (row.ItemArray.Length < 7) continue;
+                                if (row.ItemArray.Length < 4) continue;
 
                                 string sIdStr = row[0]?.ToString() ?? "";
-                                if (!int.TryParse(sIdStr, out int studentId)) continue;
+                                int.TryParse(sIdStr, out int studentId);
                                 string email = row[1]?.ToString() ?? "";
 
-                                double.TryParse(row[3]?.ToString() ?? "0", out double attendance);
-                                double.TryParse(row[4]?.ToString() ?? "0", out double classTest);
-                                double.TryParse(row[5]?.ToString() ?? "0", out double midTerm);
-                                double.TryParse(row[6]?.ToString() ?? "0", out double finalExam);
+                                double attendance = ParseDouble(row[3]?.ToString() ?? "0");
+                                double classTest = ParseDouble(row[4]?.ToString() ?? "0");
+                                double midTerm = ParseDouble(row[5]?.ToString() ?? "0");
+                                double finalExam = ParseDouble(row[6]?.ToString() ?? "0");
 
                                 var result = await ProcessStudentMarkAsync(studentId, email, subjectId, teacher.Id, teacher.DepartmentId, attendance, classTest, midTerm, finalExam);
                                 if (result.Success) successCount++;
@@ -719,17 +738,23 @@ namespace finalSE.Controllers
             }
             catch (Exception ex)
             {
+                if (isAjax) return Json(new { success = false, message = $"Error parsing file: {ex.Message}" });
                 TempData["ErrorMessage"] = $"Error parsing file: {ex.Message}";
                 return RedirectToAction(nameof(StudentMarks), new { subjectId });
             }
 
+            string resultMsg;
             if (errorCount > 0)
             {
-                TempData["ErrorMessage"] = $"Successfully updated & published {successCount} student marks. Failed on {errorCount} rows. Errors: {string.Join("; ", errorList.Take(5))}";
+                resultMsg = $"Upload complete: {successCount} succeeded, {errorCount} failed. Errors: {string.Join("; ", errorList.Take(5))}";
+                if (isAjax) return Json(new { success = successCount > 0, message = resultMsg });
+                TempData["ErrorMessage"] = resultMsg;
             }
             else
             {
-                TempData["SuccessMessage"] = $"All {successCount} student marks successfully uploaded and automatically published!";
+                resultMsg = $"All {successCount} student marks successfully uploaded and published!";
+                if (isAjax) return Json(new { success = true, message = resultMsg });
+                TempData["SuccessMessage"] = resultMsg;
             }
 
             return RedirectToAction(nameof(StudentMarks), new { subjectId });
@@ -737,7 +762,11 @@ namespace finalSE.Controllers
 
         private List<string> ParseCsvLine(string line)
         {
+            line = line.Trim('\uFEFF', '\r', '\n');
             var result = new List<string>();
+            if (string.IsNullOrWhiteSpace(line)) return result;
+
+            char delimiter = line.Contains(';') && !line.Contains(',') ? ';' : ',';
             bool inQuotes = false;
             var currentToken = new System.Text.StringBuilder();
 
@@ -748,9 +777,9 @@ namespace finalSE.Controllers
                 {
                     inQuotes = !inQuotes;
                 }
-                else if (c == ',' && !inQuotes)
+                else if (c == delimiter && !inQuotes)
                 {
-                    result.Add(currentToken.ToString().Trim());
+                    result.Add(currentToken.ToString().Trim(' ', '"', '\t'));
                     currentToken.Clear();
                 }
                 else
@@ -758,18 +787,44 @@ namespace finalSE.Controllers
                     currentToken.Append(c);
                 }
             }
-            result.Add(currentToken.ToString().Trim());
+            result.Add(currentToken.ToString().Trim(' ', '"', '\t'));
             return result;
+        }
+
+        private double ParseDouble(string val)
+        {
+            val = val.Trim(' ', '"', '\t');
+            if (double.TryParse(val, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out double res))
+                return res;
+            if (double.TryParse(val, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.CurrentCulture, out double res2))
+                return res2;
+            return 0;
         }
 
         private async Task<(bool Success, string Error)> ProcessStudentMarkAsync(int studentId, string email, int subjectId, int teacherId, int teacherDeptId, double attendance, double classTest, double midTerm, double finalExam)
         {
-            var student = await _context.Students.FindAsync(studentId);
-            if (student == null || student.Email.Trim().ToLower() != email.Trim().ToLower())
-                return (false, $"Student with ID {studentId} and Email '{email}' not found.");
+            string cleanEmail = email.Trim(' ', '"', '\t').ToLower();
+
+            StudentModel? student = null;
+            if (studentId > 0)
+            {
+                student = await _context.Students.FindAsync(studentId);
+            }
+
+            if (student == null && !string.IsNullOrEmpty(cleanEmail))
+            {
+                student = await _context.Students.FirstOrDefaultAsync(s => s.Email.ToLower() == cleanEmail);
+            }
+
+            if (student == null)
+            {
+                return (false, $"Student record with ID {studentId} or Email '{email}' not found.");
+            }
 
             if (student.DepartmentId != teacherDeptId)
-                return (false, $"Student {student.Name} does not belong to your department.");
+            {
+                return (false, $"Student '{student.Name}' does not belong to your department.");
+            }
 
             if (attendance < 0 || attendance > 10) return (false, $"Attendance marks for {student.Name} must be between 0 and 10.");
             if (classTest < 0 || classTest > 20) return (false, $"Class Test marks for {student.Name} must be between 0 and 20.");
@@ -779,12 +834,12 @@ namespace finalSE.Controllers
             var total = attendance + classTest + midTerm + finalExam;
             var gradeInfo = CalculateGrade(total, attendance);
 
-            var mark = await _context.StudentMarks.FirstOrDefaultAsync(m => m.StudentId == studentId && m.SubjectId == subjectId);
+            var mark = await _context.StudentMarks.FirstOrDefaultAsync(m => m.StudentId == student.Id && m.SubjectId == subjectId);
             if (mark == null)
             {
                 mark = new StudentMark
                 {
-                    StudentId = studentId,
+                    StudentId = student.Id,
                     SubjectId = subjectId,
                 };
                 _context.StudentMarks.Add(mark);
@@ -806,6 +861,7 @@ namespace finalSE.Controllers
             await _context.SaveChangesAsync();
             return (true, "");
         }
+
 
         private (string LetterGrade, double GradePoint, string Remarks, string AttendanceStatus) CalculateGrade(double total, double attendance)
         {

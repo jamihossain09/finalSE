@@ -1,0 +1,107 @@
+@model finalSE.Controllers.GlobalSearchViewModel
+
+@{
+    ViewData["Title"] = "Search Results";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="card border-0 shadow-sm mb-4" style="border-radius: 20px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #fff;">
+        <div class="card-body p-4 p-md-5">
+            <div class="max-w-3xl mx-auto text-center">
+                <span class="badge bg-primary px-3 py-2 rounded-pill mb-3 fs-6"><i class="fas fa-search me-2"></i>Global Search</span>
+                <h1 class="fw-bold mb-3">Search Results</h1>
+                @if (!string.IsNullOrWhiteSpace(Model.Query))
+                {
+                    <p class="fs-5 opacity-75 m-0">Showing matching records for <mark class="px-2 py-1 bg-warning text-dark rounded fw-semibold">"@Model.Query"</mark></p>
+                }
+                else
+                {
+                    <p class="fs-5 opacity-75 m-0">Enter a keyword above to search across students, teachers, notices, routines, and class materials.</p>
+                }
+
+                <!-- Search Input Form -->
+                <div class="mt-4 col-md-8 col-lg-6 mx-auto">
+                    <form asp-controller="Search" asp-action="Index" method="get">
+                        <div class="input-group input-group-lg shadow-sm" style="border-radius: 14px; overflow: hidden;">
+                            <input type="text" name="q" value="@Model.Query" class="form-control border-0 ps-4" placeholder="Search anything in system..." autofocus />
+                            <button class="btn btn-primary px-4 fw-semibold" type="submit">
+                                <i class="fas fa-search me-2"></i>Search
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Section -->
+    <div class="row">
+        <div class="col-12">
+            @if (string.IsNullOrWhiteSpace(Model.Query))
+            {
+                <div class="card border-0 shadow-sm text-center py-5" style="border-radius: 20px;">
+                    <div class="card-body">
+                        <div class="mx-auto mb-3" style="width:70px;height:70px;background:rgba(79,70,229,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#4f46e5;">
+                            <i class="fas fa-keyboard fa-2x"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark">Type to start searching</h4>
+                        <p class="text-muted">Use the search bar above to look up profiles, routines, notices, assignments, and class videos.</p>
+                    </div>
+                </div>
+            }
+            else if (!Model.Results.Any())
+            {
+                <div class="card border-0 shadow-sm text-center py-5" style="border-radius: 20px;">
+                    <div class="card-body">
+                        <div class="mx-auto mb-3" style="width:70px;height:70px;background:rgba(239,68,68,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#ef4444;">
+                            <i class="fas fa-search-minus fa-2x"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark">No records found</h4>
+                        <p class="text-muted">We couldn't find any results matching "<strong>@Model.Query</strong>". Try checking for spelling errors or searching with a different term.</p>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="d-flex align-items-center justify-content-between mb-3 px-2">
+                    <h5 class="fw-bold text-dark m-0"><i class="fas fa-list text-primary me-2"></i>Found @Model.Results.Count Result(s)</h5>
+                </div>
+
+                <div class="row g-3">
+                    @foreach (var item in Model.Results)
+                    {
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card border-0 shadow-sm h-100 search-card" style="border-radius: 16px; transition: transform .2s ease, box-shadow .2s ease;">
+                                <div class="card-body p-4 d-flex flex-column">
+                                    <div class="d-flex align-items-center justify-content-between mb-3">
+                                        <span class="badge @item.BadgeColor px-3 py-1.5" style="border-radius: 8px;">
+                                            <i class="@item.Icon me-1.5"></i> @item.Category
+                                        </span>
+                                    </div>
+
+                                    <h5 class="fw-bold text-dark mb-1">@item.Title</h5>
+                                    <div class="text-muted small fw-semibold mb-2">@item.Subtitle</div>
+                                    <p class="text-secondary small flex-grow-1 mb-3">@item.Description</p>
+
+                                    <div class="pt-3 border-top d-flex justify-content-end">
+                                        <a href="@item.Url" class="btn btn-outline-primary btn-sm px-3" style="border-radius: 8px;">
+                                            View Details <i class="fas fa-arrow-right ms-1"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .search-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0,0,0,.08) !important;
+    }
+</style>
